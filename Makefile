@@ -5,10 +5,10 @@ LDFLAGS :=
 
 .PHONY: all clean
 
-all: run
+all: test
 
-run: run.cpp
+test: test.cpp sftp.cpp
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 
 clean:
-	rm -f run
+	rm -f test
