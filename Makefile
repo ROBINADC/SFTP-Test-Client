@@ -7,8 +7,8 @@ LDFLAGS :=
 
 all: test
 
-test: test.cpp sftp.cpp
-	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
+test: test.cpp sftp.cpp test.h sftp.h
+	$(CC) -o $@ test.cpp sftp.cpp $(CFLAGS) $(LDLIBS)
 
 prepare:
 	mkdir -p /tmp/sftp/local
