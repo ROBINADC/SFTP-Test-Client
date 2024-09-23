@@ -82,7 +82,7 @@ int sftpConn(SftpArg &arg) {
     if (arg.enableDownload) {
         char *localFilePath = arg.localFilePath;
         char *remoteFilePath = arg.remoteFilePath;
-        
+
         LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, remoteFilePath, LIBSSH2_FXF_READ, 0);
         if (!handle) {
             std::cerr << "libssh2_sftp_open failed" << std::endl;
@@ -103,7 +103,7 @@ int sftpConn(SftpArg &arg) {
             libssh2_exit();
             return 1;
         }
-        char buffer[1024]; // size?
+        char buffer[1048576]; // size?
         int len = 0;
         while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
             fout.write(buffer, len);

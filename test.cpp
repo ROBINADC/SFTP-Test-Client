@@ -17,7 +17,7 @@ const char *IPADDR = "127.0.0.1";
 const int PORT = 2222;
 const char *USERNAME = "root";
 const char *PASSWORD = "qweiop";
-const bool ENABLE_DOWNLOAD = true;
+const bool ENABLE_DOWNLOAD = false;
 const char *LOCAL_TEMPFILE_DIR = "/tmp/sftp/local/";
 const char *REMOTE_TEMPFILE_DIR = "/tmp/sftp/remote/";
 
