@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -std=c++11 -g
+CFLAGS := -std=c++11 -g -O2
 LDLIBS := -lstdc++ -lssh2 -lpthread
 LDFLAGS :=
 

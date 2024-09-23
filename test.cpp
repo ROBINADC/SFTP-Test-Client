@@ -6,12 +6,13 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <cstdio>
 
 #include "sftp.h"
 #include "test.h"
 
 const int NUM_WORKERS = 10;
-const int WORKER_RUN_SECONDS = 30;
+const int WORKER_RUN_SECONDS = 10;
 const char *IPADDR = "127.0.0.1";
 const int PORT = 2222;
 const char *USERNAME = "root";
@@ -22,6 +23,8 @@ const char *REMOTE_TEMPFILE_DIR = "/tmp/sftp/remote/";
 
 std::atomic_bool workerRun(true);
 
+std::mutex mtx;
+
 WorkerResult startWorker(int tid) {
     int count = 0;
     double rt = 0.0;
@@ -31,7 +34,8 @@ WorkerResult startWorker(int tid) {
         .port = PORT,
         .username = USERNAME,
         .password = PASSWORD,
-        .enableDownload = ENABLE_DOWNLOAD};
+        .enableDownload = ENABLE_DOWNLOAD,
+    };
 
     std::string localFpStr;
     std::string remoteFpStr;
@@ -53,7 +57,8 @@ WorkerResult startWorker(int tid) {
         rt += elapse;
         ++count;
     }
-    std::cout << rt << " " << count << std::endl;
+
+    printf("tid:%-2d rt:%.0fms count:%d\n", tid, rt, count);
 
     return {rt, count};
 }
