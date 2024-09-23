@@ -28,6 +28,17 @@
     ./test
     ```
 
+## SSH SFTP Configuration
+
+In `/etc/ssh/sshd_config`,
+
+```
+#Subsystem      sftp    /usr/libexec/openssh/sftp-server
+Subsystem       sftp    internal-sftp
+```
+
+systemctl restart sshd
+
 ## Reference
 
 https://blog.csdn.net/CarryMee/article/details/130697889
