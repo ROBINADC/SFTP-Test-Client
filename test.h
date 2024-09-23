@@ -6,4 +6,6 @@ typedef struct _WorkerResult {
     int numRequests;
 } WorkerResult;
 
+WorkerResult startWorker(int tid);
+
 #endif

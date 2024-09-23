@@ -79,35 +79,38 @@ int sftpConn(SftpArg &arg) {
     }
 
     // Download remote file to local
-    // const char *localFilePath = "/tmp/sftp/local/1.txt";
-    // const char *remoteFilePath = "/tmp/sftp/remote/1.txt";
-    // LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, remoteFilePath, LIBSSH2_FXF_READ, 0);
-    // if (!handle) {
-    //     std::cerr << "libssh2_sftp_open failed" << std::endl;
-    //     libssh2_sftp_shutdown(sftp);
-    //     close(sock);
-    //     libssh2_session_free(session);
-    //     libssh2_exit();
-    //     return 1;
-    // }
+    if (arg.enableDownload) {
+        char *localFilePath = arg.localFilePath;
+        char *remoteFilePath = arg.remoteFilePath;
+        
+        LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, remoteFilePath, LIBSSH2_FXF_READ, 0);
+        if (!handle) {
+            std::cerr << "libssh2_sftp_open failed" << std::endl;
+            libssh2_sftp_shutdown(sftp);
+            close(sock);
+            libssh2_session_free(session);
+            libssh2_exit();
+            return 1;
+        }
 
-    // std::ofstream fout(localFilePath, std::ios::out | std::ios::binary);
-    // if (!fout.good()) {
-    //     std::cerr << "Failed to open local file for writing" << std::endl;
-    //     libssh2_sftp_close(handle);
-    //     libssh2_sftp_shutdown(sftp);
-    //     close(sock);
-    //     libssh2_session_free(session);
-    //     libssh2_exit();
-    //     return 1;
-    // }
-    // char buffer[1024]; // size?
-    // int len = 0;
-    // while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
-    //     fout.write(buffer, len);
-    // }
-    // fout.close();
-    // libssh2_sftp_close(handle);
+        std::ofstream fout(localFilePath, std::ios::out | std::ios::binary);
+        if (!fout.good()) {
+            std::cerr << "Failed to open local file for writing" << std::endl;
+            libssh2_sftp_close(handle);
+            libssh2_sftp_shutdown(sftp);
+            close(sock);
+            libssh2_session_free(session);
+            libssh2_exit();
+            return 1;
+        }
+        char buffer[1024]; // size?
+        int len = 0;
+        while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
+            fout.write(buffer, len);
+        }
+        fout.close();
+        libssh2_sftp_close(handle);
+    }
 
     // Close SFTP session and other resources
     libssh2_sftp_shutdown(sftp);

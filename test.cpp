@@ -3,27 +3,46 @@
 #include <future>
 #include <iostream>
 #include <numeric>
+#include <string>
 #include <thread>
 #include <vector>
 
-#include "test.h"
 #include "sftp.h"
+#include "test.h"
 
 const int NUM_WORKERS = 10;
-const int WORKER_RUN_SECONDS = 10;
-
-SftpArg sftpArg = {
-    .ipaddr = "127.0.0.1",
-    .port = 2222,
-    .username = "root",
-    .password = "qweiop"
-};
+const int WORKER_RUN_SECONDS = 30;
+const char *IPADDR = "127.0.0.1";
+const int PORT = 2222;
+const char *USERNAME = "root";
+const char *PASSWORD = "qweiop";
+const bool ENABLE_DOWNLOAD = true;
+const char *LOCAL_TEMPFILE_DIR = "/tmp/sftp/local/";
+const char *REMOTE_TEMPFILE_DIR = "/tmp/sftp/remote/";
 
 std::atomic_bool workerRun(true);
 
-WorkerResult startWorker() {
+WorkerResult startWorker(int tid) {
     int count = 0;
     double rt = 0.0;
+
+    SftpArg sftpArg = {
+        .ipaddr = IPADDR,
+        .port = PORT,
+        .username = USERNAME,
+        .password = PASSWORD,
+        .enableDownload = ENABLE_DOWNLOAD};
+
+    std::string localFpStr;
+    std::string remoteFpStr;
+
+    if (ENABLE_DOWNLOAD) {
+        sftpArg.enableDownload = true;
+        localFpStr = std::string(LOCAL_TEMPFILE_DIR) + std::to_string(tid) + std::string(".txt");
+        remoteFpStr = std::string(REMOTE_TEMPFILE_DIR) + std::to_string(tid) + std::string(".txt");
+        sftpArg.localFilePath = const_cast<char *>(localFpStr.data());
+        sftpArg.remoteFilePath = const_cast<char *>(remoteFpStr.data());
+    }
 
     while (workerRun.load()) {
         auto start = std::chrono::steady_clock::now();
@@ -39,8 +58,6 @@ WorkerResult startWorker() {
     return {rt, count};
 }
 
-
-
 int main(int argc, char const *argv[]) {
     int rc = sftpInit();
     if (rc != 0) {
@@ -49,7 +66,7 @@ int main(int argc, char const *argv[]) {
 
     std::vector<std::future<WorkerResult>> futures;
     for (int i = 1; i <= NUM_WORKERS; ++i) {
-        futures.push_back(std::async(startWorker));
+        futures.push_back(std::async(startWorker, i));
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(WORKER_RUN_SECONDS));
@@ -64,7 +81,7 @@ int main(int argc, char const *argv[]) {
     }
 
     std::cout << "Number of SFTP requests: " << count << std::endl;
-    
+
     double meanRt = rt / count;
     std::cout << "Average response time: " << meanRt << " ms" << std::endl;
 

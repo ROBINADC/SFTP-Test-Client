@@ -6,7 +6,7 @@ typedef struct _SftpArg {
     const int port;
     const char *username;
     const char *password;
-    bool enableUpload;
+    bool enableDownload;
     char *localFilePath;
     char *remoteFilePath;
 } SftpArg;
