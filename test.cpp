@@ -1,7 +1,6 @@
 #include <atomic>
 #include <chrono>
 #include <future>
-#include <iostream>
 #include <numeric>
 #include <string>
 #include <thread>
@@ -12,7 +11,7 @@
 #include "test.h"
 
 const int NUM_WORKERS = 10;
-const int WORKER_RUN_SECONDS = 10;
+const int WORKER_RUN_SECONDS = 30;
 const char *IPADDR = "127.0.0.1";
 const int PORT = 2222;
 const char *USERNAME = "root";
@@ -44,8 +43,8 @@ WorkerResult startWorker(int tid) {
         sftpArg.enableDownload = true;
         localFpStr = std::string(LOCAL_TEMPFILE_DIR) + std::to_string(tid) + std::string(".txt");
         remoteFpStr = std::string(REMOTE_TEMPFILE_DIR) + std::to_string(tid) + std::string(".txt");
-        sftpArg.localFilePath = const_cast<char *>(localFpStr.data());
-        sftpArg.remoteFilePath = const_cast<char *>(remoteFpStr.data());
+        sftpArg.localFilePath = localFpStr.data();
+        sftpArg.remoteFilePath = remoteFpStr.data();
     }
 
     while (workerRun.load()) {
@@ -85,10 +84,20 @@ int main(int argc, char const *argv[]) {
         rt += result.totalResponseTime;
     }
 
-    std::cout << "Number of SFTP requests: " << count << std::endl;
-
     double meanRt = rt / count;
-    std::cout << "Average response time: " << meanRt << " ms" << std::endl;
+    double tps = static_cast<double>(count) / WORKER_RUN_SECONDS;
+
+    printf("\nTest result\n");
+    printf("ENABLE_DOWNLOAD: %d\n", ENABLE_DOWNLOAD);
+    printf("Number of SFTP requests: %d\n", count);
+    printf("Average response time: %.2fms\n", meanRt);
+    printf("TPS: %.2f\n", tps);
+
+
+    // std::cout <<  << count << std::endl;
+
+    
+    // std::cout << "Average response time: " << meanRt << " ms" << std::endl;
 
     return 0;
 }

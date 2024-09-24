@@ -80,10 +80,7 @@ int sftpConn(SftpArg &arg) {
 
     // Download remote file to local
     if (arg.enableDownload) {
-        char *localFilePath = arg.localFilePath;
-        char *remoteFilePath = arg.remoteFilePath;
-
-        LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, remoteFilePath, LIBSSH2_FXF_READ, 0);
+        LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, arg.remoteFilePath, LIBSSH2_FXF_READ, 0);
         if (!handle) {
             std::cerr << "libssh2_sftp_open failed" << std::endl;
             libssh2_sftp_shutdown(sftp);
@@ -93,7 +90,7 @@ int sftpConn(SftpArg &arg) {
             return 1;
         }
 
-        std::ofstream fout(localFilePath, std::ios::out | std::ios::binary);
+        std::ofstream fout(arg.localFilePath, std::ios::out | std::ios::binary);
         if (!fout.good()) {
             std::cerr << "Failed to open local file for writing" << std::endl;
             libssh2_sftp_close(handle);

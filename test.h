@@ -1,10 +1,10 @@
 #ifndef _TEST_H_
 #define _TEST_H_
 
-typedef struct _WorkerResult {
+using WorkerResult = struct _WorkerResult {
     double totalResponseTime;
     int numRequests;
-} WorkerResult;
+};
 
 WorkerResult startWorker(int tid);
 

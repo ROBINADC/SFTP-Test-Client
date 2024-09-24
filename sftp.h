@@ -1,15 +1,15 @@
 #ifndef _SFTP_H_
 #define _SFTP_H_
 
-typedef struct _SftpArg {
+using SftpArg = struct _SfrpArg {
     const char *ipaddr;
     const int port;
     const char *username;
     const char *password;
     bool enableDownload;
-    char *localFilePath;
-    char *remoteFilePath;
-} SftpArg;
+    const char *localFilePath;
+    const char *remoteFilePath;
+};
 
 int sftpInit();
 
