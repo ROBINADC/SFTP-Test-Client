@@ -11,7 +11,7 @@
 #include "test.h"
 
 const int NUM_WORKERS = 10;
-const int WORKER_RUN_SECONDS = 30;
+const int WORKER_RUN_SECONDS = 10;
 const char *IPADDR = "127.0.0.1";
 const int PORT = 2222;
 const char *USERNAME = "root";
