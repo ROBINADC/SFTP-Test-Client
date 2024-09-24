@@ -20,6 +20,9 @@ const bool ENABLE_DOWNLOAD = false;
 const char *LOCAL_TEMPFILE_DIR = "/tmp/sftp/local/";
 const char *REMOTE_TEMPFILE_DIR = "/tmp/sftp/remote/";
 
+/**
+ * Atomic variable to control the running state of all workers.
+ */
 std::atomic_bool workerRun(true);
 
 std::mutex mtx;
@@ -92,12 +95,6 @@ int main(int argc, char const *argv[]) {
     printf("Number of SFTP requests: %d\n", count);
     printf("Average response time: %.2fms\n", meanRt);
     printf("TPS: %.2f\n", tps);
-
-
-    // std::cout <<  << count << std::endl;
-
-    
-    // std::cout << "Average response time: " << meanRt << " ms" << std::endl;
 
     return 0;
 }
