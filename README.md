@@ -7,7 +7,7 @@ Test the response time of parallel SFTP connections.
 1. Install dependencies
 
     ```
-    dnf install make gcc-c++ libssh2-devel yaml-cpp
+    dnf install make gcc-c++ libssh2-devel yaml-cpp-devel
     ```
 
 2. Check configurations in `test.cpp`
