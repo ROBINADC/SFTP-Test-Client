@@ -1,14 +1,16 @@
 #ifndef _SFTP_H_
 #define _SFTP_H_
 
+#include <string>
+
 using SftpArg = struct _SfrpArg {
-    const char *ipaddr;
+    std::string ipaddr;
     const int port;
-    const char *username;
-    const char *password;
+    std::string username;
+    std::string password;
     bool enableDownload;
-    const char *localFilePath;
-    const char *remoteFilePath;
+    std::string localFilePath;
+    std::string remoteFilePath;
 };
 
 int sftpInit();

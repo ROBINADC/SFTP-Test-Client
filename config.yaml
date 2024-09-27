@@ -1,0 +1,9 @@
+numWorkers: 10
+workerRunSeconds: 10
+ipaddr: "127.0.0.1"
+port: 22
+username: "root"
+password: "password"
+enableDownload: false
+localTempfileDir: "/tmp/sftp/local/"
+remoteTempfileDir: "/tmp/sftp/remote/"

@@ -1,6 +1,6 @@
 CC := gcc
 CFLAGS := -std=c++11 -g -O2
-LDLIBS := -lstdc++ -lssh2 -lpthread
+LDLIBS := -lstdc++ -lssh2 -lpthread -lyaml-cpp
 
 .PHONY: all clean prepare
 

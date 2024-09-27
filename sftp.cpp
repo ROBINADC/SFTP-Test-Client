@@ -26,8 +26,8 @@ int sftpConn(SftpArg &arg) {
         return 1;
     }
 
-    const char *ipaddr = arg.ipaddr;
-    int port = arg.port;
+    const char* ipaddr = arg.ipaddr.c_str();
+    const int port = arg.port;
     struct sockaddr_in sin;
     sin.sin_family = AF_INET;
     sin.sin_port = htons(port);
@@ -57,8 +57,8 @@ int sftpConn(SftpArg &arg) {
         return 1;
     }
 
-    const char *username = arg.username;
-    const char *password = arg.password;
+    const char *username = arg.username.c_str();
+    const char *password = arg.password.c_str();
     rc = libssh2_userauth_password(session, username, password);
     if (rc != 0) {
         std::cerr << "libssh2_userauth_password failed" << std::endl;
@@ -80,7 +80,7 @@ int sftpConn(SftpArg &arg) {
 
     // Download remote file to local
     if (arg.enableDownload) {
-        LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, arg.remoteFilePath, LIBSSH2_FXF_READ, 0);
+        LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, arg.remoteFilePath.c_str(), LIBSSH2_FXF_READ, 0);
         if (!handle) {
             std::cerr << "libssh2_sftp_open failed" << std::endl;
             libssh2_sftp_shutdown(sftp);

@@ -1,51 +1,41 @@
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <future>
+#include <iostream>
 #include <numeric>
 #include <string>
 #include <thread>
 #include <vector>
-#include <cstdio>
+#include <yaml-cpp/yaml.h>
 
 #include "sftp.h"
 #include "test.h"
-
-const int NUM_WORKERS = 10;
-const int WORKER_RUN_SECONDS = 10;
-const char *IPADDR = "127.0.0.1";
-const int PORT = 2222;
-const char *USERNAME = "root";
-const char *PASSWORD = "qweiop";
-const bool ENABLE_DOWNLOAD = false;
-const char *LOCAL_TEMPFILE_DIR = "/tmp/sftp/local/";
-const char *REMOTE_TEMPFILE_DIR = "/tmp/sftp/remote/";
 
 /**
  * Atomic variable to control the running state of all workers.
  */
 std::atomic_bool workerRun(true);
 
-std::mutex mtx;
-
-WorkerResult startWorker(int tid) {
+WorkerResult startWorker(TestArg arg, int tid) {
     int count = 0;
     double rt = 0.0;
 
     SftpArg sftpArg = {
-        .ipaddr = IPADDR,
-        .port = PORT,
-        .username = USERNAME,
-        .password = PASSWORD,
-        .enableDownload = ENABLE_DOWNLOAD,
+        .ipaddr = arg.ipaddr,
+        .port = arg.port,
+        .username = arg.username,
+        .password = arg.password,
+        .enableDownload = arg.enableDownload,
     };
 
     std::string localFpStr;
     std::string remoteFpStr;
 
-    if (ENABLE_DOWNLOAD) {
+    if (arg.enableDownload) {
         sftpArg.enableDownload = true;
-        localFpStr = std::string(LOCAL_TEMPFILE_DIR) + std::to_string(tid) + std::string(".txt");
-        remoteFpStr = std::string(REMOTE_TEMPFILE_DIR) + std::to_string(tid) + std::string(".txt");
+        localFpStr = std::string(arg.localTempfileDir) + std::to_string(tid) + std::string(".txt");
+        remoteFpStr = std::string(arg.remoteTempfileDir) + std::to_string(tid) + std::string(".txt");
         sftpArg.localFilePath = localFpStr.data();
         sftpArg.remoteFilePath = remoteFpStr.data();
     }
@@ -65,18 +55,68 @@ WorkerResult startWorker(int tid) {
     return {rt, count};
 }
 
+TestArg parseArg(const std::string &fileName) {
+    // Defualt testing arguments
+    TestArg arg = {
+        .numWorkers = 10,
+        .workerRunSeconds = 10,
+        .ipaddr = "127.0.0.1",
+        .port = 22,
+        .username = "root",
+        .password = "password",
+        .enableDownload = false,
+        .localTempfileDir = "/tmp/sftp/local/",
+        .remoteTempfileDir = "/tmp/sftp/remote/",
+    };
+
+    YAML::Node node = YAML::LoadFile(fileName);
+
+    if (node["numWorkers"]) {
+        arg.numWorkers = node["numWorkers"].as<int>();
+    }
+    if (node["workerRunSeconds"]) {
+        arg.workerRunSeconds = node["workerRunSeconds"].as<int>();
+    }
+    if (node["ipaddr"]) {
+        arg.ipaddr = node["ipaddr"].as<std::string>();
+    }
+    if (node["port"]) {
+        arg.port = node["port"].as<int>();
+    }
+    if (node["username"]) {
+        arg.username = node["username"].as<std::string>();
+    }
+    if (node["password"]) {
+        arg.password = node["password"].as<std::string>();
+    }
+    if (node["enableDownload"]) {
+        arg.enableDownload = node["enableDownload"].as<bool>();
+    }
+    if (node["localTempfileDir"]) {
+        arg.localTempfileDir = node["localTempfileDir"].as<std::string>();
+    }
+    if (node["remoteTempfileDir"]) {
+        arg.remoteTempfileDir = node["remoteTempfileDir"].as<std::string>();
+    }
+
+    return arg;
+}
+
 int main(int argc, char const *argv[]) {
+
+    TestArg arg = parseArg("config.yaml");
+
     int rc = sftpInit();
     if (rc != 0) {
         return 1;
     }
 
     std::vector<std::future<WorkerResult>> futures;
-    for (int i = 1; i <= NUM_WORKERS; ++i) {
-        futures.push_back(std::async(startWorker, i));
+    for (int i = 1; i <= arg.numWorkers; ++i) {
+        futures.push_back(std::async(startWorker, arg, i));
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(WORKER_RUN_SECONDS));
+    std::this_thread::sleep_for(std::chrono::seconds(arg.workerRunSeconds));
     workerRun.store(false);
 
     int count = 0;
@@ -88,10 +128,10 @@ int main(int argc, char const *argv[]) {
     }
 
     double meanRt = rt / count;
-    double tps = static_cast<double>(count) / WORKER_RUN_SECONDS;
+    double tps = static_cast<double>(count) / arg.workerRunSeconds;
 
     printf("\nTest result\n");
-    printf("ENABLE_DOWNLOAD: %d\n", ENABLE_DOWNLOAD);
+    printf("ENABLE_DOWNLOAD: %d\n", arg.enableDownload);
     printf("Number of SFTP requests: %d\n", count);
     printf("Average response time: %.2fms\n", meanRt);
     printf("TPS: %.2f\n", tps);
