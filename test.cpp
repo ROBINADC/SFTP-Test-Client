@@ -42,7 +42,11 @@ WorkerResult startWorker(TestArg arg, int tid) {
 
     while (workerRun.load()) {
         auto start = std::chrono::steady_clock::now();
-        sftpConn(sftpArg);
+        int rc = sftpConn(sftpArg);
+        if (rc != 0) {
+            printf("Thread-%d terminated with sftpConn exit code %d\n", tid, rc);
+            return {0, 0};
+        }
         auto diff = std::chrono::steady_clock::now() - start;
         double elapse = std::chrono::duration<double, std::milli>(diff).count(); // ms
 

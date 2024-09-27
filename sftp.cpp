@@ -3,14 +3,13 @@
 #include <libssh2_sftp.h>
 
 #include <fstream>
-#include <iostream>
 
 #include "sftp.h"
 
 int sftpInit() {
     int rc = libssh2_init(0);
     if (rc != 0) {
-        std::cerr << "libssh2 initialization failed" << std::endl;
+        fprintf(stderr, "libssh2 initialization failed\n");
     }
     return 0;
 }
@@ -21,7 +20,7 @@ int sftpConn(SftpArg &arg) {
     // Establish SSH connection
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1) {
-        std::cerr << "socket failed" << std::endl;
+        fprintf(stderr, "socket failed\n");
         libssh2_exit();
         return 1;
     }
@@ -33,7 +32,7 @@ int sftpConn(SftpArg &arg) {
     sin.sin_port = htons(port);
     sin.sin_addr.s_addr = inet_addr(ipaddr);
     if (connect(sock, (struct sockaddr *)(&sin), sizeof(struct sockaddr_in)) != 0) {
-        std::cerr << "connect failed" << std::endl;
+        fprintf(stderr, "connect failed\n");
         close(sock);
         libssh2_exit();
         return 1;
@@ -42,7 +41,7 @@ int sftpConn(SftpArg &arg) {
     // Setup SSH session
     LIBSSH2_SESSION *session = libssh2_session_init();
     if (!session) {
-        std::cerr << "libssh2_session_init failed" << std::endl;
+        fprintf(stderr, "libssh2_session_init failed\n");
         close(sock);
         libssh2_exit();
         return 1;
@@ -50,7 +49,7 @@ int sftpConn(SftpArg &arg) {
 
     rc = libssh2_session_handshake(session, sock);
     if (rc != 0) {
-        std::cerr << "libssh2_session_handshake failed" << std::endl;
+        fprintf(stderr, "libssh2_session_handshake failed\n");
         close(sock);
         libssh2_session_free(session);
         libssh2_exit();
@@ -61,7 +60,7 @@ int sftpConn(SftpArg &arg) {
     const char *password = arg.password.c_str();
     rc = libssh2_userauth_password(session, username, password);
     if (rc != 0) {
-        std::cerr << "libssh2_userauth_password failed" << std::endl;
+        fprintf(stderr, "libssh2_userauth_password failed\n");
         close(sock);
         libssh2_session_free(session);
         libssh2_exit();
@@ -71,7 +70,7 @@ int sftpConn(SftpArg &arg) {
     // Setup SFTP
     LIBSSH2_SFTP *sftp = libssh2_sftp_init(session);
     if (!sftp) {
-        std::cerr << "libssh2_sftp_init failed" << std::endl;
+        fprintf(stderr, "libssh2_sftp_init failed\n");
         close(sock);
         libssh2_session_free(session);
         libssh2_exit();
@@ -82,7 +81,7 @@ int sftpConn(SftpArg &arg) {
     if (arg.enableDownload) {
         LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, arg.remoteFilePath.c_str(), LIBSSH2_FXF_READ, 0);
         if (!handle) {
-            std::cerr << "libssh2_sftp_open failed" << std::endl;
+            fprintf(stderr, "libssh2_sftp_open failed\n");
             libssh2_sftp_shutdown(sftp);
             close(sock);
             libssh2_session_free(session);
@@ -92,7 +91,7 @@ int sftpConn(SftpArg &arg) {
 
         std::ofstream fout(arg.localFilePath, std::ios::out | std::ios::binary);
         if (!fout.good()) {
-            std::cerr << "Failed to open local file for writing" << std::endl;
+            fprintf(stderr, "Failed to open local file for writing\n");
             libssh2_sftp_close(handle);
             libssh2_sftp_shutdown(sftp);
             close(sock);
