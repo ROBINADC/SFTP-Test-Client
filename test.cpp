@@ -71,7 +71,6 @@ TestArg parseArg(const std::string &fileName) {
     };
 
     YAML::Node node = YAML::LoadFile(fileName);
-
     if (node["numWorkers"]) {
         arg.numWorkers = node["numWorkers"].as<int>();
     }
@@ -104,7 +103,6 @@ TestArg parseArg(const std::string &fileName) {
 }
 
 int main(int argc, char const *argv[]) {
-
     TestArg arg = parseArg("config.yaml");
 
     int rc = sftpInit();

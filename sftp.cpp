@@ -57,9 +57,7 @@ int sftpConn(SftpArg &arg) {
         return 1;
     }
 
-    const char *username = arg.username.c_str();
-    const char *password = arg.password.c_str();
-    rc = libssh2_userauth_password(session, username, password);
+    rc = libssh2_userauth_password(session, arg.username.c_str(), arg.password.c_str());
     if (rc != 0) {
         fprintf(stderr, "libssh2_userauth_password failed\n");
         close(sock);
