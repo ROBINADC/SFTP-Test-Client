@@ -16,15 +16,15 @@ Test the response time of parallel SFTP connections.
 
     |Key|Description|
     |:---|:---|
-    |NUM_WORKERS|the number of parallel threads to perform SFTP operations|
-    |WORKER_RUN_SECONDS|running time of each worker|
-    |IPADDR|IP Address of SFTP server, can be local machine|
-    |PORT|port that the SFTP server listen to|
-    |USERNAME|username for SSH connection to SFTP server|
-    |PASSWORD|password for SSH connection to SFTP server|
-    |ENABLE_DOWNLOAD|whether to download files in each SFTP connection. If set to `false`, the worker simply establishs and closes SFTP connections|
-    |LOCAL_TEMPFILE_DIR|directory to store files downloaded by SFTP client. Should end with `/`|
-    |REMOTE_TEMPFILE_DIR|directory to store files in SFTP server. Should end with `/`|
+    |numWorkers|the number of parallel threads to perform SFTP operations|
+    |workerRunSeconds|running time of each worker|
+    |ipaddr|IP Address of SFTP server, can be local machine|
+    |port|port that the SFTP server listen to|
+    |username|username for SSH connection to SFTP server|
+    |password|password for SSH connection to SFTP server|
+    |enableDownload|whether to download files in each SFTP connection. If set to `false`, the worker simply establishs and closes SFTP connections|
+    |localTempfileDir|directory to store files downloaded by SFTP client. Should end with `/`|
+    |remoteTempfileDir|directory to store files in SFTP server. Should end with `/`|
 
 3. Build
 
