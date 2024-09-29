@@ -3,7 +3,7 @@
 
 #include <string>
 
-using SftpArg = struct _SfrpArg {
+using SftpArg = struct _SftpArg {
     std::string ipaddr;
     const int port;
     std::string username;

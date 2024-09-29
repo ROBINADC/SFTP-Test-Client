@@ -2,7 +2,6 @@
 #include <chrono>
 #include <cstdio>
 #include <future>
-#include <iostream>
 #include <numeric>
 #include <string>
 #include <thread>
@@ -34,10 +33,8 @@ WorkerResult startWorker(TestArg arg, int tid) {
 
     if (arg.enableDownload) {
         sftpArg.enableDownload = true;
-        localFpStr = std::string(arg.localTempfileDir) + std::to_string(tid) + std::string(".txt");
-        remoteFpStr = std::string(arg.remoteTempfileDir) + std::to_string(tid) + std::string(".txt");
-        sftpArg.localFilePath = localFpStr.data();
-        sftpArg.remoteFilePath = remoteFpStr.data();
+        sftpArg.localFilePath = arg.localTempfileDir + std::to_string(tid) + ".txt";
+        sftpArg.remoteFilePath = arg.remoteTempfileDir + std::to_string(tid) + ".txt";
     }
 
     while (workerRun.load()) {
