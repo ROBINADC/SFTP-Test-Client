@@ -26,12 +26,10 @@ int sftpConn(SftpArg &arg) {
         return 1;
     }
 
-    const char* ipaddr = arg.ipaddr.c_str();
-    const int port = arg.port;
     struct sockaddr_in sin;
     sin.sin_family = AF_INET;
-    sin.sin_port = htons(port);
-    sin.sin_addr.s_addr = inet_addr(ipaddr);
+    sin.sin_port = htons(arg.port);
+    sin.sin_addr.s_addr = inet_addr(arg.ipaddr.c_str());
     if (connect(sock, (struct sockaddr *)(&sin), sizeof(struct sockaddr_in)) != 0) {
         fprintf(stderr, "connect failed\n");
         close(sock);
@@ -98,7 +96,7 @@ int sftpConn(SftpArg &arg) {
             libssh2_exit();
             return 1;
         }
-        char buffer[1048576]; // size?
+        char buffer[1048576]; // buffer size
         int len = 0;
         while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
             fout.write(buffer, len);
