@@ -46,6 +46,28 @@ int sshConn(SftpArg &arg) {
         return 1;
     }
 
+    // add print
+    // rc = libssh2_session_supported_algs(session,
+    //                                     LIBSSH2_METHOD_CRYPT_CS,
+    //                                     &algorithms);
+    // if ()
+    // if (rc > 0) {
+    //     /* the call succeeded, do sth. with the list of algorithms
+    //        (e.g. list them)... */
+    //     printf("Supported symmetric algorithms:\n");
+    //     for (i = 0; i < rc; i++)
+    //         printf("\t%s\n", algorithms[i]);
+
+    //     /* ... and free the allocated memory when not needed anymore */
+    //     libssh2_free(session, algorithms);
+    // } else {
+    //     /* call failed, error handling */
+    // }
+
+    // add modify
+    libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_CS, "hmac-sha1");
+    libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_SC, "hmac-sha1");
+
     rc = libssh2_session_handshake(session, sock);
     if (rc != 0) {
         fprintf(stderr, "libssh2_session_handshake failed\n");
@@ -75,7 +97,6 @@ int sshConn(SftpArg &arg) {
     std::cout << "LIBSSH2_METHOD_COMP_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_COMP_SC) << std::endl;
     std::cout << "LIBSSH2_METHOD_LANG_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_CS) << std::endl;
     std::cout << "LIBSSH2_METHOD_LANG_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_SC) << std::endl;
-    std::cout << "LIBSSH2_METHOD_SIGN_ALGO: " << libssh2_session_methods(session, LIBSSH2_METHOD_SIGN_ALGO) << std::endl;
 
     sftpSession(sock, session, arg);
 
