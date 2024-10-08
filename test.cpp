@@ -114,8 +114,8 @@ int main(int argc, char const *argv[]) {
 
     printf("Test configuration\n");
     std::cout << "Remote Info: " << arg.username << "@" << arg.ipaddr << ":" << arg.port << std::endl;
-    std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl;
-    printf("Number of SFTP per SSH session: %d\n\n", arg.numSftpPerSsh);
+    std::cout << "Number of SFTP per SSH session: " << arg.numSftpPerSsh << std::endl;
+    std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl << std::endl;
 
     int rc = sshInit();
     if (rc != 0) {
