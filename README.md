@@ -22,6 +22,7 @@ Test the response time of parallel SFTP connections.
     |port|port that the SFTP server listen to|
     |username|username for SSH connection to SFTP server|
     |password|password for SSH connection to SFTP server|
+    |numSftpPerSsh|the number of sequential SFTP connections within a single SSH session|
     |enableDownload|whether to download files in each SFTP connection. If set to `false`, the worker simply establishs and closes SFTP connections|
     |localTempfileDir|directory to store files downloaded by SFTP client. Should end with `/`|
     |remoteTempfileDir|directory to store files in SFTP server. Should end with `/`|

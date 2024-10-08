@@ -4,6 +4,7 @@ ipaddr: "127.0.0.1"
 port: 10022
 username: "root"
 password: "password"
+numSftpPerSsh: 1
 enableDownload: false
 localTempfileDir: "/tmp/sftp/local/"
 remoteTempfileDir: "/tmp/sftp/remote/"

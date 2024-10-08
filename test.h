@@ -15,6 +15,7 @@ using TestArg = struct _TestArg {
     int port;
     std::string username;
     std::string password;
+    int numSftpPerSsh;
     bool enableDownload;
     std::string localTempfileDir;
     std::string remoteTempfileDir;

@@ -2,8 +2,8 @@
 #include <libssh2.h>
 #include <libssh2_sftp.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "sftp.h"
 
@@ -64,52 +64,66 @@ int sftpConn(SftpArg &arg) {
         return 1;
     }
 
-    // Setup SFTP
-    LIBSSH2_SFTP *sftp = libssh2_sftp_init(session);
-    if (!sftp) {
-        fprintf(stderr, "libssh2_sftp_init failed\n");
-        close(sock);
-        libssh2_session_free(session);
-        libssh2_exit();
-        return 1;
-    }
+    sftpSession(sock, session, arg);
 
-    // Download remote file to local
-    if (arg.enableDownload) {
-        LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, arg.remoteFilePath.c_str(), LIBSSH2_FXF_READ, 0);
-        if (!handle) {
-            fprintf(stderr, "libssh2_sftp_open failed\n");
-            libssh2_sftp_shutdown(sftp);
-            close(sock);
-            libssh2_session_free(session);
-            libssh2_exit();
-            return 1;
-        }
-
-        std::ofstream fout(arg.localFilePath, std::ios::out | std::ios::binary);
-        if (!fout.good()) {
-            fprintf(stderr, "Failed to open local file for writing\n");
-            libssh2_sftp_close(handle);
-            libssh2_sftp_shutdown(sftp);
-            close(sock);
-            libssh2_session_free(session);
-            libssh2_exit();
-            return 1;
-        }
-        char buffer[1048576]; // buffer size
-        int len = 0;
-        while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
-            fout.write(buffer, len);
-        }
-        fout.close();
-        libssh2_sftp_close(handle);
-    }
-
-    // Close SFTP session and other resources
-    libssh2_sftp_shutdown(sftp);
+    // Close SSH resources
     libssh2_session_disconnect(session, "Normal Shutdown");
     libssh2_session_free(session);
     close(sock);
     libssh2_exit();
+    return 0;
+}
+
+int sftpSession(int sock, LIBSSH2_SESSION *session, SftpArg &arg) {
+    if (arg.numSftpPerSsh <= 0) {
+        return 0;
+    }
+
+    for (int i = 0; i < arg.numSftpPerSsh; ++i) {
+        // Setup SFTP
+        LIBSSH2_SFTP *sftp = libssh2_sftp_init(session);
+        if (!sftp) {
+            fprintf(stderr, "libssh2_sftp_init failed\n");
+            close(sock);
+            libssh2_session_free(session);
+            libssh2_exit();
+            return 1;
+        }
+
+        // Download remote file to local
+        if (arg.enableDownload) {
+            LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_open(sftp, arg.remoteFilePath.c_str(), LIBSSH2_FXF_READ, 0);
+            if (!handle) {
+                fprintf(stderr, "libssh2_sftp_open failed\n");
+                libssh2_sftp_shutdown(sftp);
+                close(sock);
+                libssh2_session_free(session);
+                libssh2_exit();
+                return 1;
+            }
+
+            std::ofstream fout(arg.localFilePath, std::ios::out | std::ios::binary);
+            if (!fout.good()) {
+                fprintf(stderr, "Failed to open local file for writing\n");
+                libssh2_sftp_close(handle);
+                libssh2_sftp_shutdown(sftp);
+                close(sock);
+                libssh2_session_free(session);
+                libssh2_exit();
+                return 1;
+            }
+            char buffer[1048576]; // buffer size
+            int len = 0;
+            while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
+                fout.write(buffer, len);
+            }
+            fout.close();
+            libssh2_sftp_close(handle);
+        }
+
+        // Close SFTP session and other resources
+        libssh2_sftp_shutdown(sftp);
+    }
+
     return 0;
 }

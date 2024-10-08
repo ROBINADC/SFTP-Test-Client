@@ -25,6 +25,7 @@ WorkerResult startWorker(TestArg arg, int tid) {
         .port = arg.port,
         .username = arg.username,
         .password = arg.password,
+        .numSftpPerSsh = arg.numSftpPerSsh,
         .enableDownload = arg.enableDownload,
     };
 
@@ -65,6 +66,7 @@ TestArg parseArg(const std::string &fileName) {
         .port = 22,
         .username = "root",
         .password = "password",
+        .numSftpPerSsh = 1,
         .enableDownload = false,
         .localTempfileDir = "/tmp/sftp/local/",
         .remoteTempfileDir = "/tmp/sftp/remote/",
@@ -88,6 +90,9 @@ TestArg parseArg(const std::string &fileName) {
     }
     if (node["password"]) {
         arg.password = node["password"].as<std::string>();
+    }
+    if (node["numSftpPerSsh"]) {
+        arg.numSftpPerSsh = node["numSftpPerSsh"].as<int>();
     }
     if (node["enableDownload"]) {
         arg.enableDownload = node["enableDownload"].as<bool>();
@@ -131,6 +136,7 @@ int main(int argc, char const *argv[]) {
 
     printf("\nTest result\n");
     printf("ENABLE_DOWNLOAD: %d\n", arg.enableDownload);
+    printf("Number of SFTP per SSH session: %d\n", arg.numSftpPerSsh);
     printf("Number of SFTP requests: %d\n", count);
     printf("Average response time: %.2fms\n", meanRt);
     printf("TPS: %.2f\n", tps);
