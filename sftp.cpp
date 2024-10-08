@@ -47,24 +47,25 @@ int sshConn(SftpArg &arg) {
     }
 
     // add print
-    // rc = libssh2_session_supported_algs(session,
-    //                                     LIBSSH2_METHOD_CRYPT_CS,
-    //                                     &algorithms);
-    // if ()
-    // if (rc > 0) {
-    //     /* the call succeeded, do sth. with the list of algorithms
-    //        (e.g. list them)... */
-    //     printf("Supported symmetric algorithms:\n");
-    //     for (i = 0; i < rc; i++)
-    //         printf("\t%s\n", algorithms[i]);
+    const char **algorithms;
+    rc = libssh2_session_supported_algs(session,
+                                        LIBSSH2_METHOD_KEX,
+                                        &algorithms);
+    if (rc > 0) {
+        /* the call succeeded, do sth. with the list of algorithms
+           (e.g. list them)... */
+        printf("Supported LIBSSH2_METHOD_KEX:\n");
+        for (int i = 0; i < rc; i++)
+            printf("\t%s\n", algorithms[i]);
 
-    //     /* ... and free the allocated memory when not needed anymore */
-    //     libssh2_free(session, algorithms);
-    // } else {
-    //     /* call failed, error handling */
-    // }
+        /* ... and free the allocated memory when not needed anymore */
+        libssh2_free(session, algorithms);
+    } else {
+        /* call failed, error handling */
+    }
 
     // add modify
+    libssh2_session_method_pref(session, LIBSSH2_METHOD_KEX, "diffie-hellman-group-exchange-sha256");
     libssh2_session_method_pref(session, LIBSSH2_METHOD_HOSTKEY, "ssh-rsa");
     libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_CS, "hmac-sha1");
     libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_SC, "hmac-sha1");
