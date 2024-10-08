@@ -65,6 +65,7 @@ int sshConn(SftpArg &arg) {
     // }
 
     // add modify
+    libssh2_session_method_pref(session, LIBSSH2_METHOD_HOSTKEY, "ssh-rsa");
     libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_CS, "hmac-sha1");
     libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_SC, "hmac-sha1");
 
