@@ -6,6 +6,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 #include <yaml-cpp/yaml.h>
 
 #include "sftp.h"
@@ -111,7 +113,8 @@ int main(int argc, char const *argv[]) {
     TestArg arg = parseArg("config.yaml");
 
     printf("Test configuration\n");
-    printf("ENABLE_DOWNLOAD: %d\n", arg.enableDownload);
+    std::cout << "Remote Info: " << arg.username << "@" << arg.ipaddr << ":" << arg.port << std::endl;
+    std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl;
     printf("Number of SFTP per SSH session: %d\n\n", arg.numSftpPerSsh);
 
     int rc = sshInit();
