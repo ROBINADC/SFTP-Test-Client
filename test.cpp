@@ -40,9 +40,9 @@ WorkerResult startWorker(TestArg arg, int tid) {
 
     while (workerRun.load()) {
         auto start = std::chrono::steady_clock::now();
-        int rc = sftpConn(sftpArg);
+        int rc = sshConn(sftpArg);
         if (rc != 0) {
-            printf("Thread-%d terminated with sftpConn exit code %d\n", tid, rc);
+            printf("Thread-%d terminated with sshConn exit code %d\n", tid, rc);
             return {0, 0};
         }
         auto diff = std::chrono::steady_clock::now() - start;
@@ -52,7 +52,7 @@ WorkerResult startWorker(TestArg arg, int tid) {
         ++count;
     }
 
-    printf("tid:%-2d rt:%.0fms count:%d\n", tid, rt, count);
+    printf("tid:%-2d rt:%.0fms ssh-count:%d sftp-count:%d\n", tid, rt, count, count * arg.numSftpPerSsh);
 
     return {rt, count};
 }
@@ -110,7 +110,11 @@ TestArg parseArg(const std::string &fileName) {
 int main(int argc, char const *argv[]) {
     TestArg arg = parseArg("config.yaml");
 
-    int rc = sftpInit();
+    printf("Test configuration\n");
+    printf("ENABLE_DOWNLOAD: %d\n", arg.enableDownload);
+    printf("Number of SFTP per SSH session: %d\n\n", arg.numSftpPerSsh);
+
+    int rc = sshInit();
     if (rc != 0) {
         return 1;
     }
@@ -135,9 +139,8 @@ int main(int argc, char const *argv[]) {
     double tps = static_cast<double>(count) / arg.workerRunSeconds;
 
     printf("\nTest result\n");
-    printf("ENABLE_DOWNLOAD: %d\n", arg.enableDownload);
-    printf("Number of SFTP per SSH session: %d\n", arg.numSftpPerSsh);
-    printf("Number of SFTP requests: %d\n", count);
+    printf("Number of SSH requests: %d\n", count);
+    printf("Number of SFTP requests: %d\n", count * arg.numSftpPerSsh);
     printf("Average response time: %.2fms\n", meanRt);
     printf("TPS: %.2f\n", tps);
 

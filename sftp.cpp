@@ -7,7 +7,7 @@
 
 #include "sftp.h"
 
-int sftpInit() {
+int sshInit() {
     int rc = libssh2_init(0);
     if (rc != 0) {
         fprintf(stderr, "libssh2 initialization failed\n");
@@ -15,7 +15,7 @@ int sftpInit() {
     return 0;
 }
 
-int sftpConn(SftpArg &arg) {
+int sshConn(SftpArg &arg) {
     int rc;
 
     // Establish SSH connection

@@ -16,9 +16,9 @@ using SftpArg = struct _SftpArg {
     std::string remoteFilePath;
 };
 
-int sftpInit();
+int sshInit();
 
-int sftpConn(SftpArg &);
+int sshConn(SftpArg &);
 
 int sftpSession(int sock, LIBSSH2_SESSION *session, SftpArg &arg);
 
