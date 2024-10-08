@@ -140,9 +140,16 @@ int main(int argc, char const *argv[]) {
 
     printf("\nTest result\n");
     printf("Number of SSH requests: %d\n", count);
-    printf("Number of SFTP requests: %d\n", count * arg.numSftpPerSsh);
-    printf("Average response time: %.2fms\n", meanRt);
-    printf("TPS: %.2f\n", tps);
+    printf("Average SSH response time: %.2fms\n", meanRt);
+    printf("SSH TPS: %.2f\n", tps);
 
+    printf("\nNumber of SFTP requests: %d\n", count * arg.numSftpPerSsh);
+    printf("Average SFTP response time: ");
+    if (arg.numSftpPerSsh > 0) {
+        printf("%.2fms\n", meanRt / arg.numSftpPerSsh);
+    } else {
+        printf("NaN\n");
+    }
+    printf("SFTP TPS: %.2f\n", tps * arg.numSftpPerSsh);
     return 0;
 }
