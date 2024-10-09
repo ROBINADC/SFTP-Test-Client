@@ -47,28 +47,28 @@ int sshConn(SftpArg &arg) {
     }
 
     // add print
-    const char **algorithms;
-    rc = libssh2_session_supported_algs(session,
-                                        LIBSSH2_METHOD_KEX,
-                                        &algorithms);
-    if (rc > 0) {
-        /* the call succeeded, do sth. with the list of algorithms
-           (e.g. list them)... */
-        printf("Supported LIBSSH2_METHOD_KEX:\n");
-        for (int i = 0; i < rc; i++)
-            printf("\t%s\n", algorithms[i]);
+    // const char **algorithms;
+    // rc = libssh2_session_supported_algs(session,
+    //                                     LIBSSH2_METHOD_KEX,
+    //                                     &algorithms);
+    // if (rc > 0) {
+    //     /* the call succeeded, do sth. with the list of algorithms
+    //        (e.g. list them)... */
+    //     printf("Supported LIBSSH2_METHOD_KEX:\n");
+    //     for (int i = 0; i < rc; i++)
+    //         printf("\t%s\n", algorithms[i]);
 
-        /* ... and free the allocated memory when not needed anymore */
-        libssh2_free(session, algorithms);
-    } else {
-        /* call failed, error handling */
-    }
+    //     /* ... and free the allocated memory when not needed anymore */
+    //     libssh2_free(session, algorithms);
+    // } else {
+    //     /* call failed, error handling */
+    // }
 
     // add modify
-    libssh2_session_method_pref(session, LIBSSH2_METHOD_KEX, "diffie-hellman-group-exchange-sha256");
-    libssh2_session_method_pref(session, LIBSSH2_METHOD_HOSTKEY, "ssh-rsa");
-    libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_CS, "hmac-sha1");
-    libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_SC, "hmac-sha1");
+    // libssh2_session_method_pref(session, LIBSSH2_METHOD_KEX, "diffie-hellman-group-exchange-sha256");
+    // libssh2_session_method_pref(session, LIBSSH2_METHOD_HOSTKEY, "ssh-rsa");
+    // libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_CS, "hmac-sha1");
+    // libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_SC, "hmac-sha1");
 
     rc = libssh2_session_handshake(session, sock);
     if (rc != 0) {
@@ -89,16 +89,16 @@ int sshConn(SftpArg &arg) {
     }
 
     // add print
-    std::cout << "LIBSSH2_METHOD_KEX: " << libssh2_session_methods(session, LIBSSH2_METHOD_KEX) << std::endl;
-    std::cout << "LIBSSH2_METHOD_HOSTKEY: " << libssh2_session_methods(session, LIBSSH2_METHOD_HOSTKEY) << std::endl;
-    std::cout << "LIBSSH2_METHOD_CRYPT_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_CRYPT_CS) << std::endl;
-    std::cout << "LIBSSH2_METHOD_CRYPT_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_CRYPT_SC) << std::endl;
-    std::cout << "LIBSSH2_METHOD_MAC_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_MAC_CS) << std::endl;
-    std::cout << "LIBSSH2_METHOD_MAC_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_MAC_SC) << std::endl;
-    std::cout << "LIBSSH2_METHOD_COMP_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_COMP_CS) << std::endl;
-    std::cout << "LIBSSH2_METHOD_COMP_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_COMP_SC) << std::endl;
-    std::cout << "LIBSSH2_METHOD_LANG_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_CS) << std::endl;
-    std::cout << "LIBSSH2_METHOD_LANG_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_SC) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_KEX: " << libssh2_session_methods(session, LIBSSH2_METHOD_KEX) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_HOSTKEY: " << libssh2_session_methods(session, LIBSSH2_METHOD_HOSTKEY) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_CRYPT_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_CRYPT_CS) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_CRYPT_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_CRYPT_SC) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_MAC_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_MAC_CS) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_MAC_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_MAC_SC) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_COMP_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_COMP_CS) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_COMP_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_COMP_SC) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_LANG_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_CS) << std::endl;
+    // std::cout << "LIBSSH2_METHOD_LANG_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_SC) << std::endl;
 
     sftpSession(sock, session, arg);
 

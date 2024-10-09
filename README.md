@@ -84,3 +84,4 @@ systemctl restart sshd
 
 - https://blog.csdn.net/CarryMee/article/details/130697889
 - https://blog.csdn.net/weixin_43954810/article/details/135385864
+- https://carta.tech/man-pages/man3/libssh2_session_supported_algs.3.html
