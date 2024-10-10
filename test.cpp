@@ -114,6 +114,8 @@ int main(int argc, char const *argv[]) {
 
     printf("Test configuration\n");
     std::cout << "Remote Info: " << arg.username << "@" << arg.ipaddr << ":" << arg.port << std::endl;
+    std::cout << "Numer of workers: " << arg.numWorkers << std::endl;
+    std::cout << "Worker run seconds: " << arg.workerRunSeconds << "s" << std::endl;
     std::cout << "Number of SFTP per SSH session: " << arg.numSftpPerSsh << std::endl;
     std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl << std::endl;
 
