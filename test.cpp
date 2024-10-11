@@ -1,24 +1,32 @@
 #include <atomic>
 #include <chrono>
+#include <csignal>
 #include <cstdio>
 #include <future>
+#include <iostream>
 #include <numeric>
+#include <pthread.h>
 #include <string>
 #include <thread>
 #include <vector>
-#include <iostream>
-#include <iomanip>
 #include <yaml-cpp/yaml.h>
 
 #include "sftp.h"
 #include "test.h"
+
+using namespace std::chrono;
 
 /**
  * Atomic variable to control the running state of all workers.
  */
 std::atomic_bool workerRun(true);
 
-WorkerResult startWorker(TestArg arg, int tid) {
+WorkerResult runWorker(TestArg arg, int tid) {
+    // Block SIGINT
+    sigset_t mask;
+    sigaddset(&mask, SIGINT);
+    pthread_sigmask(SIG_SETMASK, &mask, NULL);
+
     SftpArg sftpArg = {
         .ipaddr = arg.ipaddr,
         .port = arg.port,
@@ -41,14 +49,14 @@ WorkerResult startWorker(TestArg arg, int tid) {
     double rt = 0.0;
 
     while (workerRun.load() && count != arg.workerNumRequests) {
-        auto start = std::chrono::steady_clock::now();
+        auto start = steady_clock::now();
         int rc = sshConn(sftpArg);
         if (rc != 0) {
             printf("Thread-%d terminated with sshConn exit code %d\n", tid, rc);
             return {0, 0};
         }
-        auto diff = std::chrono::steady_clock::now() - start;
-        double elapse = std::chrono::duration<double, std::milli>(diff).count(); // ms
+        auto diff = steady_clock::now() - start;
+        double elapse = duration<double, std::milli>(diff).count(); // ms
 
         rt += elapse;
         ++count;
@@ -113,6 +121,11 @@ TestArg parseArg(const std::string &fileName) {
     return arg;
 }
 
+void sigIntHandler(int sigNum) {
+    printf("Main thread received SIGINT\n");
+    workerRun.store(false);
+}
+
 int main(int argc, char const *argv[]) {
     TestArg arg = parseArg("config.yaml");
 
@@ -122,7 +135,11 @@ int main(int argc, char const *argv[]) {
     std::cout << "Worker run seconds: " << arg.workerRunSeconds << "s" << std::endl;
     std::cout << "Maximum number of requests per worker: " << arg.workerNumRequests << std::endl;
     std::cout << "Number of SFTP per SSH session: " << arg.numSftpPerSsh << std::endl;
-    std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl << std::endl;
+    std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl
+              << std::endl;
+
+    // Register singal handler
+    std::signal(SIGINT, sigIntHandler);
 
     int rc = sshInit();
     if (rc != 0) {
@@ -131,11 +148,16 @@ int main(int argc, char const *argv[]) {
 
     std::vector<std::future<WorkerResult>> futures;
     for (int i = 1; i <= arg.numWorkers; ++i) {
-        futures.push_back(std::async(startWorker, arg, i));
+        futures.push_back(std::async(runWorker, arg, i));
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(arg.workerRunSeconds));
-    workerRun.store(false);
+    auto endTime = system_clock::now().time_since_epoch() + seconds(arg.workerRunSeconds);
+    while (workerRun.load()) {
+        std::this_thread::sleep_for(seconds(1));
+        if (system_clock::now().time_since_epoch() >= endTime) {
+            workerRun.store(false);
+        }
+    }
 
     int count = 0;
     double rt = 0.0;

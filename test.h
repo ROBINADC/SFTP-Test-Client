@@ -24,6 +24,6 @@ using TestArg = struct _TestArg {
 
 TestArg parseArg(const std::string &fileName);
 
-WorkerResult startWorker(TestArg arg, int tid);
+WorkerResult runWorker(TestArg arg, int tid);
 
 #endif
