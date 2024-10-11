@@ -11,6 +11,7 @@ using WorkerResult = struct _WorkerResult {
 using TestArg = struct _TestArg {
     int numWorkers;
     int workerRunSeconds;
+    int workerNumRequests;
     std::string ipaddr;
     int port;
     std::string username;

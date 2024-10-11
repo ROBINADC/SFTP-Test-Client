@@ -1,5 +1,6 @@
 numWorkers: 10
 workerRunSeconds: 10
+workerNumRequests: -1
 ipaddr: "127.0.0.1"
 port: 10022
 username: "root"

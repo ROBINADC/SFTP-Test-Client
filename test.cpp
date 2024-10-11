@@ -19,9 +19,6 @@
 std::atomic_bool workerRun(true);
 
 WorkerResult startWorker(TestArg arg, int tid) {
-    int count = 0;
-    double rt = 0.0;
-
     SftpArg sftpArg = {
         .ipaddr = arg.ipaddr,
         .port = arg.port,
@@ -40,7 +37,10 @@ WorkerResult startWorker(TestArg arg, int tid) {
         sftpArg.remoteFilePath = arg.remoteTempfileDir + std::to_string(tid) + ".txt";
     }
 
-    while (workerRun.load()) {
+    int count = 0;
+    double rt = 0.0;
+
+    while (workerRun.load() && count != arg.workerNumRequests) {
         auto start = std::chrono::steady_clock::now();
         int rc = sshConn(sftpArg);
         if (rc != 0) {
@@ -64,6 +64,7 @@ TestArg parseArg(const std::string &fileName) {
     TestArg arg = {
         .numWorkers = 10,
         .workerRunSeconds = 10,
+        .workerNumRequests = -1,
         .ipaddr = "127.0.0.1",
         .port = 22,
         .username = "root",
@@ -80,6 +81,9 @@ TestArg parseArg(const std::string &fileName) {
     }
     if (node["workerRunSeconds"]) {
         arg.workerRunSeconds = node["workerRunSeconds"].as<int>();
+    }
+    if (node["workerNumRequests"]) {
+        arg.workerNumRequests = node["workerNumRequests"].as<int>();
     }
     if (node["ipaddr"]) {
         arg.ipaddr = node["ipaddr"].as<std::string>();
@@ -116,6 +120,7 @@ int main(int argc, char const *argv[]) {
     std::cout << "Remote Info: " << arg.username << "@" << arg.ipaddr << ":" << arg.port << std::endl;
     std::cout << "Numer of workers: " << arg.numWorkers << std::endl;
     std::cout << "Worker run seconds: " << arg.workerRunSeconds << "s" << std::endl;
+    std::cout << "Maximum number of requests per worker: " << arg.workerNumRequests << std::endl;
     std::cout << "Number of SFTP per SSH session: " << arg.numSftpPerSsh << std::endl;
     std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl << std::endl;
 
