@@ -1,6 +1,6 @@
-# Parallel SFTP Test
+# Parallel SSH/SFTP Test
 
-Test the response time of parallel SFTP connections.
+Test the response time of parallel SSH or SFTP connections.
 
 ## Usage
 
@@ -36,7 +36,7 @@ Test the response time of parallel SFTP connections.
 
 4. Prepare temporary files
 
-    When the test includes downloading files (`ENABLE_DOWNLOAD` set to `true`), generate related directories and files first. Please check the command in `Makefile` before execute it.
+    When the test includes downloading files (enableDownload set to `true`), generate related directories and files first. Please check the command in `Makefile` before execute it.
 
     - For testing in local machine, execute `make prepare` in the server.
     - For testing remote machine, execute `make prepare` in both local and remote machines.
