@@ -22,7 +22,7 @@ using namespace std::chrono;
 std::atomic_bool workerRun(true);
 
 WorkerResult runWorker(TestArg arg, int tid) {
-    // Block SIGINT
+    // Block SIGINT in worker thread
     sigset_t mask;
     sigaddset(&mask, SIGINT);
     pthread_sigmask(SIG_SETMASK, &mask, NULL);
@@ -35,9 +35,6 @@ WorkerResult runWorker(TestArg arg, int tid) {
         .numSftpPerSsh = arg.numSftpPerSsh,
         .enableDownload = arg.enableDownload,
     };
-
-    std::string localFpStr;
-    std::string remoteFpStr;
 
     if (arg.enableDownload) {
         sftpArg.enableDownload = true;
@@ -155,6 +152,18 @@ int main(int argc, char const *argv[]) {
     while (workerRun.load()) {
         std::this_thread::sleep_for(seconds(1));
         if (system_clock::now().time_since_epoch() >= endTime) {
+            workerRun.store(false);
+        }
+
+        // Cancel the waiting loop if all workers finished their jobs
+        bool ready = true;
+        for (auto &f : futures) {
+            if (f.wait_for(duration<double, std::milli>(1)) != std::future_status::ready) {
+                ready = false;
+                break;
+            }
+        }
+        if (ready) {
             workerRun.store(false);
         }
     }

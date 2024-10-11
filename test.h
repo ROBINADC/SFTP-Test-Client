@@ -26,4 +26,6 @@ TestArg parseArg(const std::string &fileName);
 
 WorkerResult runWorker(TestArg arg, int tid);
 
+void sigIntHandler(int sigNum);
+
 #endif
