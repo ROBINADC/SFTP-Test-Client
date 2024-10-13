@@ -20,6 +20,10 @@ int sshInit();
 
 int sshConn(SftpArg &);
 
-int sftpSession(int sock, LIBSSH2_SESSION *session, SftpArg &arg);
+int sftpChannel(int sock, LIBSSH2_SESSION *session, SftpArg &arg);
+
+int cmdChannel(int sock, LIBSSH2_SESSION *session);
+
+static int waitSocket(int sock, LIBSSH2_SESSION *session);
 
 #endif

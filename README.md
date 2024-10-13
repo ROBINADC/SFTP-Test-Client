@@ -83,6 +83,7 @@ systemctl restart sshd
 
 ## Reference
 
-- https://blog.csdn.net/CarryMee/article/details/130697889
-- https://blog.csdn.net/weixin_43954810/article/details/135385864
-- https://carta.tech/man-pages/man3/libssh2_session_supported_algs.3.html
+- [libssh2 SFTP example 1](https://blog.csdn.net/CarryMee/article/details/130697889)
+- [libssh2 SFTP example 2](https://blog.csdn.net/weixin_43954810/article/details/135385864)
+- [libssh2_session_supported_algs](https://carta.tech/man-pages/man3/libssh2_session_supported_algs.3.html)
+- [libssh2 execute remote command example](https://blog.csdn.net/yanghangwww/article/details/113071436)

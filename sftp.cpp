@@ -1,11 +1,11 @@
+#include "sftp.h"
+
 #include <arpa/inet.h>
 #include <libssh2.h>
 #include <libssh2_sftp.h>
 
 #include <fstream>
 #include <iostream>
-
-#include "sftp.h"
 
 int sshInit() {
     int rc = libssh2_init(0);
@@ -46,25 +46,10 @@ int sshConn(SftpArg &arg) {
         return 1;
     }
 
-    // add print
-    // const char **algorithms;
-    // rc = libssh2_session_supported_algs(session,
-    //                                     LIBSSH2_METHOD_KEX,
-    //                                     &algorithms);
-    // if (rc > 0) {
-    //     /* the call succeeded, do sth. with the list of algorithms
-    //        (e.g. list them)... */
-    //     printf("Supported LIBSSH2_METHOD_KEX:\n");
-    //     for (int i = 0; i < rc; i++)
-    //         printf("\t%s\n", algorithms[i]);
+    // Turn on debug info when necessary (also need support from libssh2 library built with ENABLE_DEBUG_LOGGING=on)
+    // libssh2_trace(session, LIBSSH2_TRACE_SOCKET | LIBSSH2_TRACE_TRANS | LIBSSH2_TRACE_KEX | LIBSSH2_TRACE_AUTH | LIBSSH2_TRACE_CONN | LIBSSH2_TRACE_ERROR);
 
-    //     /* ... and free the allocated memory when not needed anymore */
-    //     libssh2_free(session, algorithms);
-    // } else {
-    //     /* call failed, error handling */
-    // }
-
-    // add modify
+    // Try different algorithms
     // libssh2_session_method_pref(session, LIBSSH2_METHOD_KEX, "diffie-hellman-group-exchange-sha256");
     // libssh2_session_method_pref(session, LIBSSH2_METHOD_HOSTKEY, "ssh-rsa");
     // libssh2_session_method_pref(session, LIBSSH2_METHOD_MAC_CS, "hmac-sha1");
@@ -88,19 +73,11 @@ int sshConn(SftpArg &arg) {
         return 1;
     }
 
-    // add print
-    // std::cout << "LIBSSH2_METHOD_KEX: " << libssh2_session_methods(session, LIBSSH2_METHOD_KEX) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_HOSTKEY: " << libssh2_session_methods(session, LIBSSH2_METHOD_HOSTKEY) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_CRYPT_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_CRYPT_CS) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_CRYPT_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_CRYPT_SC) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_MAC_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_MAC_CS) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_MAC_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_MAC_SC) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_COMP_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_COMP_CS) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_COMP_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_COMP_SC) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_LANG_CS: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_CS) << std::endl;
-    // std::cout << "LIBSSH2_METHOD_LANG_SC: " << libssh2_session_methods(session, LIBSSH2_METHOD_LANG_SC) << std::endl;
+    if (arg.numSftpPerSsh > 0) {
+        sftpChannel(sock, session, arg);
+    }
 
-    sftpSession(sock, session, arg);
+    // cmdChannel(sock, session);
 
     // Close SSH resources
     libssh2_session_disconnect(session, "Normal Shutdown");
@@ -110,7 +87,7 @@ int sshConn(SftpArg &arg) {
     return 0;
 }
 
-int sftpSession(int sock, LIBSSH2_SESSION *session, SftpArg &arg) {
+int sftpChannel(int sock, LIBSSH2_SESSION *session, SftpArg &arg) {
     if (arg.numSftpPerSsh <= 0) {
         return 0;
     }
@@ -148,7 +125,7 @@ int sftpSession(int sock, LIBSSH2_SESSION *session, SftpArg &arg) {
                 libssh2_exit();
                 return 1;
             }
-            char buffer[1048576]; // buffer size
+            char buffer[1048576];  // buffer size
             int len = 0;
             while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
                 fout.write(buffer, len);
@@ -162,4 +139,96 @@ int sftpSession(int sock, LIBSSH2_SESSION *session, SftpArg &arg) {
     }
 
     return 0;
+}
+
+int cmdChannel(int sock, LIBSSH2_SESSION *session) {
+    LIBSSH2_CHANNEL *channel;
+    int rc;
+
+    // Open channel
+    while ((channel = libssh2_channel_open_session(session)) == NULL &&
+           libssh2_session_last_error(session, NULL, NULL, 0) == LIBSSH2_ERROR_EAGAIN) {
+        waitSocket(sock, session);
+    }
+    if (!channel) {
+        fprintf(stderr, "libssh2_channel_open_session failed\n");
+        return 1;
+    }
+
+    // Execute command on remote server
+    while ((rc = libssh2_channel_exec(channel, "echo 123")) == LIBSSH2_ERROR_EAGAIN) {
+        waitSocket(sock, session);
+    }
+    if (rc) {
+        fprintf(stderr, " libssh2_channel_exec failed\n");
+        return 1;
+    }
+
+    // Read remote output
+    do {
+        char buffer[1024];
+        rc = libssh2_channel_read(channel, buffer, sizeof(buffer));
+        if (rc > 0) {
+            // Postive return value means the actual number of bytes read
+            fprintf(stdout, "Read from remote:\n");
+            for (int i = 0; i < rc; ++i)
+                fputc(buffer[i], stdout);
+            fprintf(stdout, "\n");
+        } else if (rc < 0) {
+            // Negative return value means an error
+            if (rc == LIBSSH2_ERROR_EAGAIN) {
+                waitSocket(sock, session);
+            } else {
+                fprintf(stderr, "libssh2_channel_read returned %d\n", rc);
+                break;
+            }
+        }
+    } while (rc > 0);  // Exit on 0 (no payload data was read) or negative (failure)
+
+    // Close channel
+    int exitCode = 127;
+    char *exitSignal = (char *)"none";
+
+    while ((rc = libssh2_channel_close(channel)) == LIBSSH2_ERROR_EAGAIN) {
+        waitSocket(sock, session);
+    }
+    if (rc == 0) {
+        exitCode = libssh2_channel_get_exit_status(channel);
+        libssh2_channel_get_exit_signal(channel, &exitSignal, NULL, NULL, NULL, NULL, NULL);
+    }
+    if (exitSignal) {
+        fprintf(stdout, "\nGot signal: %s\n", exitSignal);
+    }
+
+    libssh2_channel_free(channel);
+    return 0;
+}
+
+static int waitSocket(int sock, LIBSSH2_SESSION *session) {
+    struct timeval timeout;
+    int rc;
+    fd_set fd;
+    fd_set *writefd = NULL;
+    fd_set *readfd = NULL;
+    int dir;
+
+    timeout.tv_sec = 10;
+    timeout.tv_usec = 0;
+
+    FD_ZERO(&fd);
+
+    FD_SET(sock, &fd);
+
+    /* now make sure we wait in the correct direction */
+    dir = libssh2_session_block_directions(session);
+
+    if (dir & LIBSSH2_SESSION_BLOCK_INBOUND)
+        readfd = &fd;
+
+    if (dir & LIBSSH2_SESSION_BLOCK_OUTBOUND)
+        writefd = &fd;
+
+    rc = select(sock + 1, readfd, writefd, NULL, &timeout);
+
+    return rc;
 }
