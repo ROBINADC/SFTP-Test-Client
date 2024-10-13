@@ -1,3 +1,8 @@
+#include "test.h"
+
+#include <pthread.h>
+#include <yaml-cpp/yaml.h>
+
 #include <atomic>
 #include <chrono>
 #include <csignal>
@@ -5,14 +10,11 @@
 #include <future>
 #include <iostream>
 #include <numeric>
-#include <pthread.h>
 #include <string>
 #include <thread>
 #include <vector>
-#include <yaml-cpp/yaml.h>
 
 #include "sftp.h"
-#include "test.h"
 
 using namespace std::chrono;
 
@@ -53,7 +55,7 @@ WorkerResult runWorker(TestArg arg, int tid) {
             return {0, 0};
         }
         auto diff = steady_clock::now() - start;
-        double elapse = duration<double, std::milli>(diff).count(); // ms
+        double elapse = duration<double, std::milli>(diff).count();  // ms
 
         rt += elapse;
         ++count;
@@ -80,39 +82,50 @@ TestArg parseArg(const std::string &fileName) {
         .remoteTempfileDir = "/tmp/sftp/remote/",
     };
 
-    YAML::Node node = YAML::LoadFile(fileName);
-    if (node["numWorkers"]) {
-        arg.numWorkers = node["numWorkers"].as<int>();
+    auto root = YAML::LoadFile(fileName);
+    auto workerNode = root["worker"];
+    if (workerNode) {
+        if (workerNode["numWorkers"]) {
+            arg.numWorkers = workerNode["numWorkers"].as<int>();
+        }
+        if (workerNode["workerRunSeconds"]) {
+            arg.workerRunSeconds = workerNode["workerRunSeconds"].as<int>();
+        }
+        if (workerNode["workerNumRequests"]) {
+            arg.workerNumRequests = workerNode["workerNumRequests"].as<int>();
+        }
     }
-    if (node["workerRunSeconds"]) {
-        arg.workerRunSeconds = node["workerRunSeconds"].as<int>();
+
+    auto sshNode = root["ssh"];
+    if (sshNode) {
+        if (sshNode["ipaddr"]) {
+            arg.ipaddr = sshNode["ipaddr"].as<std::string>();
+        }
+        if (sshNode["port"]) {
+            arg.port = sshNode["port"].as<int>();
+        }
+        if (sshNode["username"]) {
+            arg.username = sshNode["username"].as<std::string>();
+        }
+        if (sshNode["password"]) {
+            arg.password = sshNode["password"].as<std::string>();
+        }
     }
-    if (node["workerNumRequests"]) {
-        arg.workerNumRequests = node["workerNumRequests"].as<int>();
-    }
-    if (node["ipaddr"]) {
-        arg.ipaddr = node["ipaddr"].as<std::string>();
-    }
-    if (node["port"]) {
-        arg.port = node["port"].as<int>();
-    }
-    if (node["username"]) {
-        arg.username = node["username"].as<std::string>();
-    }
-    if (node["password"]) {
-        arg.password = node["password"].as<std::string>();
-    }
-    if (node["numSftpPerSsh"]) {
-        arg.numSftpPerSsh = node["numSftpPerSsh"].as<int>();
-    }
-    if (node["enableDownload"]) {
-        arg.enableDownload = node["enableDownload"].as<bool>();
-    }
-    if (node["localTempfileDir"]) {
-        arg.localTempfileDir = node["localTempfileDir"].as<std::string>();
-    }
-    if (node["remoteTempfileDir"]) {
-        arg.remoteTempfileDir = node["remoteTempfileDir"].as<std::string>();
+
+    auto sftpNode = root["sftp"];
+    if (sftpNode) {
+        if (sftpNode["numSftpPerSsh"]) {
+            arg.numSftpPerSsh = sftpNode["numSftpPerSsh"].as<int>();
+        }
+        if (sftpNode["enableDownload"]) {
+            arg.enableDownload = sftpNode["enableDownload"].as<bool>();
+        }
+        if (sftpNode["localTempfileDir"]) {
+            arg.localTempfileDir = sftpNode["localTempfileDir"].as<std::string>();
+        }
+        if (sftpNode["remoteTempfileDir"]) {
+            arg.remoteTempfileDir = sftpNode["remoteTempfileDir"].as<std::string>();
+        }
     }
 
     return arg;
