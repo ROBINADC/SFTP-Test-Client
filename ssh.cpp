@@ -160,7 +160,7 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
         }
 
         // Execute command on remote server
-        while ((rc = libssh2_channel_exec(channel, "echo 123")) == LIBSSH2_ERROR_EAGAIN) {
+        while ((rc = libssh2_channel_exec(channel, arg.command.c_str())) == LIBSSH2_ERROR_EAGAIN) {
             waitSocket(sock, session);
         }
         if (rc) {
