@@ -1,6 +1,6 @@
 # Parallel SSH/SFTP Test
 
-Test the response time of parallel SSH or SFTP connections.
+Client code to test the response time of parallel SSH or SFTP connections.
 
 ## Usage
 
@@ -12,24 +12,7 @@ Test the response time of parallel SSH or SFTP connections.
     dnf install make gcc-c++ libssh2 libssh2-devel yaml-cpp yaml-cpp-devel
     ```
 
-2. Check configurations in `config.yaml`
-
-    |Class|Key|Description|Default Value|
-    |:---|:---|:---|:---|
-    |worker|numWorkers|the number of parallel threads to perform SFTP operations|10|
-    |worker|workerRunSeconds|running time of each worker in seconds|10|
-    |worker|workerNumRequests|total number of SSH requests to make for a worker. Set to `-1` for no limit|-1|
-    |ssh|ipaddr|IP Address of SFTP server, can be local machine|127.0.0.1|
-    |ssh|port|port that the SFTP server listen to|22|
-    |ssh|username|username for SSH connection to SFTP server|root|
-    |ssh|password|password for SSH connection to SFTP server|password|
-    |sftp|numSftpPerSsh|the number of sequential SFTP connections within a single SSH session|1|
-    |sftp|enableDownload|whether to download files in each SFTP connection. If set to `false`, the worker simply establishs and closes SFTP connections|false|
-    |sftp|localTempfileDir|directory to store files downloaded by SFTP client. Should end with `/`|`/tmp/sftp/local/`|
-    |sftp|remoteTempfileDir|directory to store files in SFTP server. Should end with `/`|`/tmp/sftp/remote/`|
-    |cmd|numCmdPerSsh|the number of remote commands to execute within a single SSH session|0|
-    |cmd|command|the command to be executed|`echo ABC`|
-    |cmd|renderOutput|whether to render remote output in local stdout. Notice the multi-threaded rendering is not thread safe|false|
+2. Check client configuration in `config.yaml`
 
 3. Build
 
@@ -44,13 +27,32 @@ Test the response time of parallel SSH or SFTP connections.
     - For testing in local machine, execute `make prepare` in the server.
     - For testing remote machine, execute `make prepare` in both local and remote machines.
 
-4. Run the test
+5. Run the test
 
     ```bash
     ./test
     ```
 
-## SSH SFTP Configuration
+## Client Configuration
+
+|Class|Key|Description|Default Value|
+|:---|:---|:---|:---|
+|worker|numWorkers|the number of parallel threads to perform SFTP operations|10|
+|worker|workerRunSeconds|running time of each worker in seconds|10|
+|worker|workerNumRequests|total number of SSH requests to make for a worker. Set to `-1` for no limit|-1|
+|ssh|ipaddr|IP Address of SFTP server, can be local machine|127.0.0.1|
+|ssh|port|port that the SFTP server listen to|22|
+|ssh|username|username for SSH connection to SFTP server|root|
+|ssh|password|password for SSH connection to SFTP server|password|
+|sftp|numSftpPerSsh|the number of sequential SFTP connections within a single SSH session|1|
+|sftp|enableDownload|whether to download files in each SFTP connection. If set to `false`, the worker simply establishs and closes SFTP connections|false|
+|sftp|localTempfileDir|directory to store files downloaded by SFTP client. Should end with `/`|`/tmp/sftp/local/`|
+|sftp|remoteTempfileDir|directory to store files in SFTP server. Should end with `/`|`/tmp/sftp/remote/`|
+|cmd|numCmdPerSsh|the number of remote commands to execute within a single SSH session|0|
+|cmd|command|the command to be executed|`echo ABC`|
+|cmd|renderOutput|whether to render remote output in local stdout. Notice the multi-threaded rendering is not thread safe|false|
+
+## SSH/SFTP Server Configuration
 
 For performance testing, use `internal-sftp` as SFTP implementation.
 
@@ -66,7 +68,7 @@ to:
 Subsystem       sftp    internal-sftp
 ```
 
-For concurrent test using multiple threads, change the below line:
+For concurrent test using multiple threads, to avoid probabilistic connect rejection, change the below line:
 
 ```bash
 MaxStartups     10:30:100
