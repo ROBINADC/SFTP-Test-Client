@@ -212,30 +212,30 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
 }
 
 static int waitSocket(int sock, LIBSSH2_SESSION *session) {
-    struct timeval timeout;
-    int rc;
     fd_set fd;
-    fd_set *writefd = NULL;
-    fd_set *readfd = NULL;
+    fd_set *fdWrite = NULL;
+    fd_set *fdRead = NULL;
     int dir;
 
-    timeout.tv_sec = 10;
-    timeout.tv_usec = 0;
-
     FD_ZERO(&fd);
-
     FD_SET(sock, &fd);
 
-    /* now make sure we wait in the correct direction */
+    // Direction
     dir = libssh2_session_block_directions(session);
 
-    if (dir & LIBSSH2_SESSION_BLOCK_INBOUND)
-        readfd = &fd;
+    if (dir & LIBSSH2_SESSION_BLOCK_INBOUND) {
+        fdRead = &fd;
+    }
 
-    if (dir & LIBSSH2_SESSION_BLOCK_OUTBOUND)
-        writefd = &fd;
+    if (dir & LIBSSH2_SESSION_BLOCK_OUTBOUND) {
+        fdWrite = &fd;
+    }
 
-    rc = select(sock + 1, readfd, writefd, NULL, &timeout);
+    struct timeval timeout = {
+        .tv_sec = 10,
+        .tv_usec = 0,
+    };
+    int rc = select(sock + 1, fdRead, fdWrite, NULL, &timeout);
 
     return rc;
 }

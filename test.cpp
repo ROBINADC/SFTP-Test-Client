@@ -1,14 +1,13 @@
 #include "test.h"
 
 #include <pthread.h>
+#include <stdio.h>
 #include <yaml-cpp/yaml.h>
 
 #include <atomic>
 #include <chrono>
 #include <csignal>
-#include <cstdio>
 #include <future>
-#include <iostream>
 #include <numeric>
 #include <string>
 #include <thread>
@@ -38,7 +37,7 @@ WorkerResult runWorker(TestArg arg, int tid) {
         .enableDownload = arg.enableDownload,
         .numCmdPerSsh = arg.numCmdPerSsh,
         .command = arg.command,
-        .renderOutput = arg.renderOutput
+        .renderOutput = arg.renderOutput,
     };
 
     if (arg.enableDownload) {
