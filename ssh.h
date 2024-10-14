@@ -14,6 +14,8 @@ using SshArg = struct _SshArg {
     bool enableDownload;
     std::string localFilePath;
     std::string remoteFilePath;
+    int numCmdPerSsh;
+    std::string command;
 };
 
 int sshInit();
@@ -22,7 +24,7 @@ int sshConn(SshArg &);
 
 int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
 
-int cmdChannel(int sock, LIBSSH2_SESSION *session);
+int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
 
 static int waitSocket(int sock, LIBSSH2_SESSION *session);
 

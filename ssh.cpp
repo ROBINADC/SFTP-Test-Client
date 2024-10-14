@@ -77,7 +77,9 @@ int sshConn(SshArg &arg) {
         sftpChannel(sock, session, arg);
     }
 
-    // cmdChannel(sock, session);
+    if (arg.numCmdPerSsh > 0) {
+        cmdChannel(sock, session, arg);
+    }
 
     // Close SSH resources
     libssh2_session_disconnect(session, "Normal Shutdown");
@@ -141,66 +143,69 @@ int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
     return 0;
 }
 
-int cmdChannel(int sock, LIBSSH2_SESSION *session) {
+int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
     LIBSSH2_CHANNEL *channel;
     int rc;
 
-    // Open channel
-    while ((channel = libssh2_channel_open_session(session)) == NULL &&
-           libssh2_session_last_error(session, NULL, NULL, 0) == LIBSSH2_ERROR_EAGAIN) {
-        waitSocket(sock, session);
-    }
-    if (!channel) {
-        fprintf(stderr, "libssh2_channel_open_session failed\n");
-        return 1;
-    }
+    for (int i = 0; i < arg.numCmdPerSsh; ++i) {
 
-    // Execute command on remote server
-    while ((rc = libssh2_channel_exec(channel, "echo 123")) == LIBSSH2_ERROR_EAGAIN) {
-        waitSocket(sock, session);
-    }
-    if (rc) {
-        fprintf(stderr, " libssh2_channel_exec failed\n");
-        return 1;
-    }
-
-    // Read remote output
-    do {
-        char buffer[1024];
-        rc = libssh2_channel_read(channel, buffer, sizeof(buffer));
-        if (rc > 0) {
-            // Postive return value means the actual number of bytes read
-            fprintf(stdout, "Read from remote:\n");
-            for (int i = 0; i < rc; ++i)
-                fputc(buffer[i], stdout);
-            fprintf(stdout, "\n");
-        } else if (rc < 0) {
-            // Negative return value means an error
-            if (rc == LIBSSH2_ERROR_EAGAIN) {
-                waitSocket(sock, session);
-            } else {
-                fprintf(stderr, "libssh2_channel_read returned %d\n", rc);
-                break;
-            }
+        // Open channel
+        while ((channel = libssh2_channel_open_session(session)) == NULL &&
+               libssh2_session_last_error(session, NULL, NULL, 0) == LIBSSH2_ERROR_EAGAIN) {
+            waitSocket(sock, session);
         }
-    } while (rc > 0); // Exit on 0 (no payload data was read) or negative (failure)
+        if (!channel) {
+            fprintf(stderr, "libssh2_channel_open_session failed\n");
+            return 1;
+        }
 
-    // Close channel
-    int exitCode = 127;
-    char *exitSignal = (char *)"none";
+        // Execute command on remote server
+        while ((rc = libssh2_channel_exec(channel, "echo 123")) == LIBSSH2_ERROR_EAGAIN) {
+            waitSocket(sock, session);
+        }
+        if (rc) {
+            fprintf(stderr, " libssh2_channel_exec failed\n");
+            return 1;
+        }
 
-    while ((rc = libssh2_channel_close(channel)) == LIBSSH2_ERROR_EAGAIN) {
-        waitSocket(sock, session);
-    }
-    if (rc == 0) {
-        exitCode = libssh2_channel_get_exit_status(channel);
-        libssh2_channel_get_exit_signal(channel, &exitSignal, NULL, NULL, NULL, NULL, NULL);
-    }
-    if (exitSignal) {
-        fprintf(stdout, "\nGot signal: %s\n", exitSignal);
-    }
+        // Read remote output
+        do {
+            char buffer[1024];
+            rc = libssh2_channel_read(channel, buffer, sizeof(buffer));
+            if (rc > 0) {
+                // Postive return value means the actual number of bytes read
+                fprintf(stdout, "Read from remote:\n");
+                for (int i = 0; i < rc; ++i)
+                    fputc(buffer[i], stdout);
+                fprintf(stdout, "\n");
+            } else if (rc < 0) {
+                // Negative return value means an error
+                if (rc == LIBSSH2_ERROR_EAGAIN) {
+                    waitSocket(sock, session);
+                } else {
+                    fprintf(stderr, "libssh2_channel_read returned %d\n", rc);
+                    break;
+                }
+            }
+        } while (rc > 0); // Exit on 0 (no payload data was read) or negative (failure)
 
-    libssh2_channel_free(channel);
+        // Close channel
+        int exitCode = 127;
+        char *exitSignal = (char *)"none";
+
+        while ((rc = libssh2_channel_close(channel)) == LIBSSH2_ERROR_EAGAIN) {
+            waitSocket(sock, session);
+        }
+        if (rc == 0) {
+            exitCode = libssh2_channel_get_exit_status(channel);
+            libssh2_channel_get_exit_signal(channel, &exitSignal, NULL, NULL, NULL, NULL, NULL);
+        }
+        if (exitSignal) {
+            fprintf(stdout, "\nGot signal: %s\n", exitSignal);
+        }
+
+        libssh2_channel_free(channel);
+    }
     return 0;
 }
 

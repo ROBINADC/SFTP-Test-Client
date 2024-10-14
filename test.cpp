@@ -36,6 +36,8 @@ WorkerResult runWorker(TestArg arg, int tid) {
         .password = arg.password,
         .numSftpPerSsh = arg.numSftpPerSsh,
         .enableDownload = arg.enableDownload,
+        .numCmdPerSsh = arg.numCmdPerSsh,
+        .command = arg.command,
     };
 
     if (arg.enableDownload) {
@@ -80,6 +82,8 @@ TestArg parseArg(const std::string &fileName) {
         .enableDownload = false,
         .localTempfileDir = "/tmp/sftp/local/",
         .remoteTempfileDir = "/tmp/sftp/remote/",
+        .numCmdPerSsh = 0,
+        .command = "echo ABC",
     };
 
     auto root = YAML::LoadFile(fileName);
@@ -128,6 +132,16 @@ TestArg parseArg(const std::string &fileName) {
         }
     }
 
+    auto cmdNode = root["cmd"];
+    if (cmdNode) {
+        if (cmdNode["numCmdPerSsh"]) {
+            arg.numCmdPerSsh = cmdNode["numCmdPerSsh"].as<int>();
+        }
+        if (cmdNode["command"]) {
+            arg.command = cmdNode["command"].as<std::string>();
+        }
+    }
+
     return arg;
 }
 
@@ -140,13 +154,18 @@ int main(int argc, char const *argv[]) {
     TestArg arg = parseArg("config.yaml");
 
     printf("Test configuration\n");
-    std::cout << "Remote Info: " << arg.username << "@" << arg.ipaddr << ":" << arg.port << std::endl;
-    std::cout << "Numer of workers: " << arg.numWorkers << std::endl;
-    std::cout << "Worker run seconds: " << arg.workerRunSeconds << "s" << std::endl;
-    std::cout << "Maximum number of requests per worker: " << arg.workerNumRequests << std::endl;
-    std::cout << "Number of SFTP per SSH session: " << arg.numSftpPerSsh << std::endl;
-    std::cout << "Enable download: " << std::boolalpha << arg.enableDownload << std::endl
-              << std::endl;
+    printf("Worker:\n");
+    printf("\tNumer of workers: %d\n", arg.numWorkers);
+    printf("\tWorker run seconds: %ds\n", arg.workerRunSeconds);
+    printf("\tMaximum number of requests per worker: %d\n", arg.workerNumRequests);
+    printf("SSH:\n");
+    printf("\tRemote Info: %s@%s:%d\n", arg.username.c_str(), arg.ipaddr.c_str(), arg.port);
+    printf("SFTP:\n");
+    printf("\tNumber of SFTP per SSH session: %d\n", arg.numSftpPerSsh);
+    printf("\tEnable download: %s\n", arg.enableDownload ? "true" : "false");
+    printf("CMD:\n");
+    printf("\tNumber of remote commands per SSH session: %d\n", arg.numCmdPerSsh);
+    printf("\tCommand: %s\n", arg.command.c_str());
 
     // Register singal handler
     std::signal(SIGINT, sigIntHandler);

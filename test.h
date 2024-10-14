@@ -20,6 +20,8 @@ using TestArg = struct _TestArg {
     bool enableDownload;
     std::string localTempfileDir;
     std::string remoteTempfileDir;
+    int numCmdPerSsh;
+    std::string command;
 };
 
 TestArg parseArg(const std::string &fileName);

@@ -15,3 +15,4 @@ sftp:
 cmd:
   numCmdPerSsh: 0
   command: "echo ABC"
+  captureOutput: false
