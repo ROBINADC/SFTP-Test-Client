@@ -38,6 +38,7 @@ WorkerResult runWorker(TestArg arg, int tid) {
         .enableDownload = arg.enableDownload,
         .numCmdPerSsh = arg.numCmdPerSsh,
         .command = arg.command,
+        .renderOutput = arg.renderOutput
     };
 
     if (arg.enableDownload) {
@@ -84,6 +85,7 @@ TestArg parseArg(const std::string &fileName) {
         .remoteTempfileDir = "/tmp/sftp/remote/",
         .numCmdPerSsh = 0,
         .command = "echo ABC",
+        .renderOutput = false,
     };
 
     auto root = YAML::LoadFile(fileName);
@@ -140,6 +142,9 @@ TestArg parseArg(const std::string &fileName) {
         if (cmdNode["command"]) {
             arg.command = cmdNode["command"].as<std::string>();
         }
+        if (cmdNode["renderOutput"]) {
+            arg.renderOutput = cmdNode["renderOutput"].as<bool>();
+        }
     }
 
     return arg;
@@ -155,17 +160,18 @@ int main(int argc, char const *argv[]) {
 
     printf("Test configuration\n");
     printf("Worker:\n");
-    printf("\tNumer of workers: %d\n", arg.numWorkers);
-    printf("\tWorker run seconds: %ds\n", arg.workerRunSeconds);
-    printf("\tMaximum number of requests per worker: %d\n", arg.workerNumRequests);
+    printf("    Numer of workers: %d\n", arg.numWorkers);
+    printf("    Worker run seconds: %ds\n", arg.workerRunSeconds);
+    printf("    Maximum number of requests per worker: %d\n", arg.workerNumRequests);
     printf("SSH:\n");
-    printf("\tRemote Info: %s@%s:%d\n", arg.username.c_str(), arg.ipaddr.c_str(), arg.port);
+    printf("    Remote Info: %s@%s:%d\n", arg.username.c_str(), arg.ipaddr.c_str(), arg.port);
     printf("SFTP:\n");
-    printf("\tNumber of SFTP per SSH session: %d\n", arg.numSftpPerSsh);
-    printf("\tEnable download: %s\n", arg.enableDownload ? "true" : "false");
+    printf("    Number of SFTP per SSH session: %d\n", arg.numSftpPerSsh);
+    printf("    Enable download: %s\n", arg.enableDownload ? "true" : "false");
     printf("CMD:\n");
-    printf("\tNumber of remote commands per SSH session: %d\n", arg.numCmdPerSsh);
-    printf("\tCommand: %s\n", arg.command.c_str());
+    printf("    Number of remote commands per SSH session: %d\n", arg.numCmdPerSsh);
+    printf("    Command: %s\n", arg.command.c_str());
+    printf("    Render remote output: %s\n", arg.renderOutput ? "true" : "false");
 
     // Register singal handler
     std::signal(SIGINT, sigIntHandler);

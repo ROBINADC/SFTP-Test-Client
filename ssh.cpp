@@ -174,10 +174,12 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
             rc = libssh2_channel_read(channel, buffer, sizeof(buffer));
             if (rc > 0) {
                 // Postive return value means the actual number of bytes read
-                fprintf(stdout, "Read from remote:\n");
-                for (int i = 0; i < rc; ++i)
-                    fputc(buffer[i], stdout);
-                fprintf(stdout, "\n");
+                if (arg.renderOutput) {
+                    fprintf(stdout, "Read from remote:\n");
+                    for (int i = 0; i < rc; ++i)
+                        fputc(buffer[i], stdout);
+                    fflush(stdout);
+                }
             } else if (rc < 0) {
                 // Negative return value means an error
                 if (rc == LIBSSH2_ERROR_EAGAIN) {

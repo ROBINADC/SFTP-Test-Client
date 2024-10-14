@@ -16,6 +16,7 @@ using SshArg = struct _SshArg {
     std::string remoteFilePath;
     int numCmdPerSsh;
     std::string command;
+    bool renderOutput;
 };
 
 int sshInit();

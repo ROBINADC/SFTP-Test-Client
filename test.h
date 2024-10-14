@@ -22,6 +22,7 @@ using TestArg = struct _TestArg {
     std::string remoteTempfileDir;
     int numCmdPerSsh;
     std::string command;
+    bool renderOutput;
 };
 
 TestArg parseArg(const std::string &fileName);
