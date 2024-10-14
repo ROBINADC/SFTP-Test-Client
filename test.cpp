@@ -14,7 +14,7 @@
 #include <thread>
 #include <vector>
 
-#include "sftp.h"
+#include "ssh.h"
 
 using namespace std::chrono;
 
@@ -29,7 +29,7 @@ WorkerResult runWorker(TestArg arg, int tid) {
     sigaddset(&mask, SIGINT);
     pthread_sigmask(SIG_SETMASK, &mask, NULL);
 
-    SftpArg sftpArg = {
+    SshArg sshArg = {
         .ipaddr = arg.ipaddr,
         .port = arg.port,
         .username = arg.username,
@@ -39,9 +39,9 @@ WorkerResult runWorker(TestArg arg, int tid) {
     };
 
     if (arg.enableDownload) {
-        sftpArg.enableDownload = true;
-        sftpArg.localFilePath = arg.localTempfileDir + std::to_string(tid) + ".txt";
-        sftpArg.remoteFilePath = arg.remoteTempfileDir + std::to_string(tid) + ".txt";
+        sshArg.enableDownload = true;
+        sshArg.localFilePath = arg.localTempfileDir + std::to_string(tid) + ".txt";
+        sshArg.remoteFilePath = arg.remoteTempfileDir + std::to_string(tid) + ".txt";
     }
 
     int count = 0;
@@ -49,13 +49,13 @@ WorkerResult runWorker(TestArg arg, int tid) {
 
     while (workerRun.load() && count != arg.workerNumRequests) {
         auto start = steady_clock::now();
-        int rc = sshConn(sftpArg);
+        int rc = sshConn(sshArg);
         if (rc != 0) {
             printf("Thread-%d terminated with sshConn exit code %d\n", tid, rc);
             return {0, 0};
         }
         auto diff = steady_clock::now() - start;
-        double elapse = duration<double, std::milli>(diff).count();  // ms
+        double elapse = duration<double, std::milli>(diff).count(); // ms
 
         rt += elapse;
         ++count;

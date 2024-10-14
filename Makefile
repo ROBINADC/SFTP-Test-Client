@@ -6,8 +6,8 @@ LDLIBS := -lstdc++ -lssh2 -lpthread -lyaml-cpp
 
 all: test
 
-test: test.cpp sftp.cpp test.h sftp.h
-	$(CC) -o $@ test.cpp sftp.cpp $(CFLAGS) $(LDLIBS)
+test: test.cpp ssh.cpp test.h ssh.h
+	$(CC) -o $@ test.cpp ssh.cpp $(CFLAGS) $(LDLIBS)
 
 prepare:
 	mkdir -p /tmp/sftp/local

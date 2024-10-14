@@ -1,11 +1,11 @@
-#ifndef _SFTP_H_
-#define _SFTP_H_
+#ifndef _SSH_H_
+#define _SSH_H_
 
 #include <libssh2.h>
 
 #include <string>
 
-using SftpArg = struct _SftpArg {
+using SshArg = struct _SshArg {
     std::string ipaddr;
     const int port;
     std::string username;
@@ -18,9 +18,9 @@ using SftpArg = struct _SftpArg {
 
 int sshInit();
 
-int sshConn(SftpArg &);
+int sshConn(SshArg &);
 
-int sftpChannel(int sock, LIBSSH2_SESSION *session, SftpArg &arg);
+int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
 
 int cmdChannel(int sock, LIBSSH2_SESSION *session);
 

@@ -1,4 +1,4 @@
-#include "sftp.h"
+#include "ssh.h"
 
 #include <arpa/inet.h>
 #include <libssh2.h>
@@ -15,7 +15,7 @@ int sshInit() {
     return 0;
 }
 
-int sshConn(SftpArg &arg) {
+int sshConn(SshArg &arg) {
     int rc;
 
     // Establish SSH connection
@@ -87,7 +87,7 @@ int sshConn(SftpArg &arg) {
     return 0;
 }
 
-int sftpChannel(int sock, LIBSSH2_SESSION *session, SftpArg &arg) {
+int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
     if (arg.numSftpPerSsh <= 0) {
         return 0;
     }
@@ -125,7 +125,7 @@ int sftpChannel(int sock, LIBSSH2_SESSION *session, SftpArg &arg) {
                 libssh2_exit();
                 return 1;
             }
-            char buffer[1048576];  // buffer size
+            char buffer[1048576]; // buffer size
             int len = 0;
             while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
                 fout.write(buffer, len);
@@ -183,7 +183,7 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session) {
                 break;
             }
         }
-    } while (rc > 0);  // Exit on 0 (no payload data was read) or negative (failure)
+    } while (rc > 0); // Exit on 0 (no payload data was read) or negative (failure)
 
     // Close channel
     int exitCode = 127;
