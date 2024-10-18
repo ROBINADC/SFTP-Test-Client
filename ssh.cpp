@@ -7,6 +7,35 @@
 #include <fstream>
 #include <iostream>
 
+/**
+ * Establish SFTP channel with the server.
+ *
+ * @param sock socket handler.
+ * @param session pointer to the SSH session.
+ * @param SshArg SSH task arguments.
+ * @return Return 0 if success, other values for error exit.
+ */
+int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
+
+/**
+ * Establish command executing channel with the server.
+ *
+ * @param sock socket handler.
+ * @param session pointer to the SSH session.
+ * @param SshArg SSH task arguments.
+ * @return Return 0 if success, other values for error exit.
+ */
+int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
+
+/**
+ * Use select to wait on socket.
+ *
+ * @param sock socket handler.
+ * @param session pointer to the SSH session.
+ * @return Return 0 if success, other values for error exit.
+ */
+int waitSocket(int sock, LIBSSH2_SESSION *session);
+
 int sshInit() {
     int rc = libssh2_init(0);
     if (rc != 0) {
@@ -148,7 +177,6 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
     int rc;
 
     for (int i = 0; i < arg.numCmdPerSsh; ++i) {
-
         // Open channel
         while ((channel = libssh2_channel_open_session(session)) == NULL &&
                libssh2_session_last_error(session, NULL, NULL, 0) == LIBSSH2_ERROR_EAGAIN) {
@@ -176,8 +204,9 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
                 // Postive return value means the actual number of bytes read
                 if (arg.renderOutput) {
                     fprintf(stdout, "Read from remote:\n");
-                    for (int i = 0; i < rc; ++i)
-                        fputc(buffer[i], stdout);
+                    for (int j = 0; j < rc; ++j) {
+                        fputc(buffer[j], stdout);
+                    }
                     fflush(stdout);
                 }
             } else if (rc < 0) {
@@ -193,7 +222,7 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
 
         // Close channel
         int exitCode = 127;
-        char *exitSignal = (char *)"none";
+        char *exitSignal = static_cast<char *>(malloc(5 * sizeof(char)));
 
         while ((rc = libssh2_channel_close(channel)) == LIBSSH2_ERROR_EAGAIN) {
             waitSocket(sock, session);
@@ -211,7 +240,7 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
     return 0;
 }
 
-static int waitSocket(int sock, LIBSSH2_SESSION *session) {
+int waitSocket(int sock, LIBSSH2_SESSION *session) {
     fd_set fd;
     fd_set *fdWrite = NULL;
     fd_set *fdRead = NULL;
@@ -222,7 +251,6 @@ static int waitSocket(int sock, LIBSSH2_SESSION *session) {
 
     // Direction
     dir = libssh2_session_block_directions(session);
-
     if (dir & LIBSSH2_SESSION_BLOCK_INBOUND) {
         fdRead = &fd;
     }

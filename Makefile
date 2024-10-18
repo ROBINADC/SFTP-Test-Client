@@ -6,7 +6,7 @@ LDLIBS := -lstdc++ -lssh2 -lpthread -lyaml-cpp
 
 all: test
 
-test: test.cpp ssh.cpp test.h ssh.h
+test: test.cpp ssh.cpp ssh.h
 	$(CC) -o $@ test.cpp ssh.cpp $(CFLAGS) $(LDLIBS)
 
 prepare:

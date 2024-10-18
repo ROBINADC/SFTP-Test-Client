@@ -24,6 +24,8 @@ using SshArg = struct _SshArg {
 
 /**
  * Initialize the libssh2 functions.
+ *
+ * @return Return 0 if success, other values for error exit.
  */
 int sshInit();
 
@@ -34,34 +36,5 @@ int sshInit();
  * @return Return 0 if success, other values for error exit.
  */
 int sshConn(SshArg &);
-
-/**
- * Establish SFTP channel with the server.
- *
- * @param sock socket handler.
- * @param session pointer to the SSH session.
- * @param SshArg SSH task arguments.
- * @return Return 0 if success, other values for error exit.
- */
-int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
-
-/**
- * Establish command executing channel with the server.
- *
- * @param sock socket handler.
- * @param session pointer to the SSH session.
- * @param SshArg SSH task arguments.
- * @return Return 0 if success, other values for error exit.
- */
-int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
-
-/**
- * Use select to wait on socket.
- *
- * @param sock socket handler.
- * @param session pointer to the SSH session.
- * @return Return 0 if success, other values for error exit.
- */
-static int waitSocket(int sock, LIBSSH2_SESSION *session);
 
 #endif // MY_SSH_H
