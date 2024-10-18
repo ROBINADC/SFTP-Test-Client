@@ -20,7 +20,7 @@ using namespace std::chrono;
 /**
  * Atomic variable to control the running state of all workers.
  */
-std::atomic_bool workerRun(true);
+static std::atomic_bool workerRun(true);
 
 WorkerResult runWorker(TestArg arg, int tid) {
     // Block SIGINT in worker thread
@@ -46,8 +46,8 @@ WorkerResult runWorker(TestArg arg, int tid) {
         sshArg.remoteFilePath = arg.remoteTempfileDir + std::to_string(tid) + ".txt";
     }
 
-    int count = 0;
-    double rt = 0.0;
+    int count = 0;   // number of SSH connections
+    double rt = 0.0; // total elapse time of SSH connections
 
     while (workerRun.load() && count != arg.workerNumRequests) {
         auto start = steady_clock::now();

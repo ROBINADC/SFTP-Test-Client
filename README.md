@@ -50,7 +50,7 @@ Client code to test the response time of parallel SSH or SFTP connections.
 |sftp|remoteTempfileDir|directory to store files in SFTP server. Should end with `/`|`/tmp/sftp/remote/`|
 |cmd|numCmdPerSsh|the number of remote commands to execute within a single SSH session|0|
 |cmd|command|the command to be executed|`echo ABC`|
-|cmd|renderOutput|whether to render remote output in local stdout. Notice the multi-threaded rendering is not thread safe|false|
+|cmd|renderOutput|whether to render remote output in local stdout. Notice the multi-threaded rendering is not guaranteed thread-safe|false|
 
 ## SSH/SFTP Server Configuration
 

@@ -5,28 +5,63 @@
 
 #include <string>
 
+/**
+ * All arguments related to an SSH task.
+ */
 using SshArg = struct _SshArg {
-    std::string ipaddr;
-    const int port;
-    std::string username;
-    std::string password;
-    int numSftpPerSsh;
-    bool enableDownload;
-    std::string localFilePath;
-    std::string remoteFilePath;
-    int numCmdPerSsh;
-    std::string command;
-    bool renderOutput;
+    std::string ipaddr;         // IP Address of SFTP server
+    const int port;             // port that the SFTP server listen to
+    std::string username;       // username for SSH connection to SFTP server
+    std::string password;       // password for SSH connection to SFTP server
+    int numSftpPerSsh;          // the number of sequential SFTP connections within a single SSH session
+    bool enableDownload;        // whether to download files in each SFTP connection
+    std::string localFilePath;  // directory to store files downloaded by SFTP client
+    std::string remoteFilePath; // directory to store files in SFTP server
+    int numCmdPerSsh;           // the number of remote commands to execute within a single SSH session
+    std::string command;        // the command to be executed
+    bool renderOutput;          // whether to render remote output in local stdout
 };
 
+/**
+ * Initialize the libssh2 functions.
+ */
 int sshInit();
 
+/**
+ * Perform an SSH conenction, and do SFTP or execute commands specified by the argument.
+ *
+ * @param SshArg SSH task arguments.
+ * @return Return 0 if success, other values for error exit.
+ */
 int sshConn(SshArg &);
 
+/**
+ * Establish SFTP channel with the server.
+ *
+ * @param sock socket handler.
+ * @param session pointer to the SSH session.
+ * @param SshArg SSH task arguments.
+ * @return Return 0 if success, other values for error exit.
+ */
 int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
 
+/**
+ * Establish command executing channel with the server.
+ *
+ * @param sock socket handler.
+ * @param session pointer to the SSH session.
+ * @param SshArg SSH task arguments.
+ * @return Return 0 if success, other values for error exit.
+ */
 int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
 
+/**
+ * Use select to wait on socket.
+ *
+ * @param sock socket handler.
+ * @param session pointer to the SSH session.
+ * @return Return 0 if success, other values for error exit.
+ */
 static int waitSocket(int sock, LIBSSH2_SESSION *session);
 
 #endif
