@@ -1,5 +1,5 @@
-#ifndef _TEST_H_
-#define _TEST_H_
+#ifndef MY_TEST_H
+#define MY_TEST_H
 
 #include <string>
 
@@ -55,4 +55,4 @@ TestArg parseArg(const std::string &fileName);
  */
 void sigIntHandler(int sigNum);
 
-#endif
+#endif // MY_TEST_H

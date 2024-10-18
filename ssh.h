@@ -1,5 +1,5 @@
-#ifndef _SSH_H_
-#define _SSH_H_
+#ifndef MY_SSH_H
+#define MY_SSH_H
 
 #include <libssh2.h>
 
@@ -64,4 +64,4 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg);
  */
 static int waitSocket(int sock, LIBSSH2_SESSION *session);
 
-#endif
+#endif // MY_SSH_H
