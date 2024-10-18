@@ -167,10 +167,13 @@ int main(int argc, char const *argv[]) {
     printf("SFTP:\n");
     printf("    Number of SFTP per SSH session: %d\n", arg.numSftpPerSsh);
     printf("    Enable download: %s\n", arg.enableDownload ? "true" : "false");
-    printf("CMD:\n");
-    printf("    Number of remote commands per SSH session: %d\n", arg.numCmdPerSsh);
-    printf("    Command: %s\n", arg.command.c_str());
-    printf("    Render remote output: %s\n", arg.renderOutput ? "true" : "false");
+    if (arg.numCmdPerSsh > 0) {
+        printf("CMD:\n"
+               "    Number of remote commands per SSH session: %d\n"
+               "    Command: %s\n"
+               "    Render remote output: %s\n",
+               arg.numCmdPerSsh, arg.command.c_str(), arg.renderOutput ? "true" : "false");
+    }
 
     // Register singal handler
     std::signal(SIGINT, sigIntHandler);
