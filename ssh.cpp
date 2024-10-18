@@ -119,10 +119,6 @@ int sshConn(SshArg &arg) {
 }
 
 int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
-    if (arg.numSftpPerSsh <= 0) {
-        return 0;
-    }
-
     for (int i = 0; i < arg.numSftpPerSsh; ++i) {
         // Setup SFTP
         LIBSSH2_SFTP *sftp = libssh2_sftp_init(session);
@@ -156,6 +152,8 @@ int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
                 libssh2_exit();
                 return 1;
             }
+
+            // Write to local file
             char buffer[1048576]; // buffer size
             int len = 0;
             while ((len = libssh2_sftp_read(handle, buffer, sizeof(buffer))) > 0) {
@@ -165,7 +163,7 @@ int sftpChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
             libssh2_sftp_close(handle);
         }
 
-        // Close SFTP session and other resources
+        // Close SFTP session
         libssh2_sftp_shutdown(sftp);
     }
 
@@ -221,14 +219,11 @@ int cmdChannel(int sock, LIBSSH2_SESSION *session, SshArg &arg) {
         } while (rc > 0); // Exit on 0 (no payload data was read) or negative (failure)
 
         // Close channel
-        int exitCode = 127;
         char *exitSignal = static_cast<char *>(malloc(5 * sizeof(char)));
-
         while ((rc = libssh2_channel_close(channel)) == LIBSSH2_ERROR_EAGAIN) {
             waitSocket(sock, session);
         }
         if (rc == 0) {
-            exitCode = libssh2_channel_get_exit_status(channel);
             libssh2_channel_get_exit_signal(channel, &exitSignal, NULL, NULL, NULL, NULL, NULL);
         }
         if (exitSignal) {

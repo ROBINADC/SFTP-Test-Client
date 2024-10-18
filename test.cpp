@@ -39,8 +39,8 @@ using TestArg = struct _TestArg {
  * Result returned by workers.
  */
 using WorkerResult = struct _WorkerResult {
-    double totalResponseTime;
-    int numRequests;
+    double totalResponseTime; // total elaspe time of all SSH connections
+    int numRequests;          // total number of SSH requests
 };
 
 /**
@@ -200,6 +200,7 @@ TestArg parseArg(const std::string &fileName) {
 }
 
 void sigIntHandler(int sigNum) {
+    // When main thread receives SIGINT, tell other threads to stop
     printf("Main thread received SIGINT\n");
     workerRun.store(false);
 }
@@ -233,11 +234,13 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
+    // Start all workers
     std::vector<std::future<WorkerResult>> futures;
     for (int i = 1; i <= arg.numWorkers; ++i) {
         futures.push_back(std::async(runWorker, arg, i));
     }
 
+    // Run until specified time
     auto endTime = system_clock::now().time_since_epoch() + seconds(arg.workerRunSeconds);
     while (workerRun.load()) {
         std::this_thread::sleep_for(seconds(1));
@@ -245,7 +248,7 @@ int main(int argc, char const *argv[]) {
             workerRun.store(false);
         }
 
-        // Cancel the waiting loop if all workers finished their jobs
+        // Also, cancel the waiting loop if all workers finished their jobs
         bool ready = true;
         for (auto &f : futures) {
             if (f.wait_for(duration<double, std::milli>(1)) != std::future_status::ready) {
@@ -258,6 +261,7 @@ int main(int argc, char const *argv[]) {
         }
     }
 
+    // Summarize and print running statistics
     int count = 0;
     double rt = 0.0;
     for (auto &f : futures) {
@@ -282,5 +286,6 @@ int main(int argc, char const *argv[]) {
         printf("NaN\n");
     }
     printf("SFTP TPS: %.2f\n", tps * arg.numSftpPerSsh);
+    
     return 0;
 }
