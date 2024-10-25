@@ -85,6 +85,8 @@ WorkerResult runWorker(TestArg arg, int tid) {
         .password = arg.password,
         .numSftpPerSsh = arg.numSftpPerSsh,
         .enableDownload = arg.enableDownload,
+        .localFilePath = "",
+        .remoteFilePath = "",
         .numCmdPerSsh = arg.numCmdPerSsh,
         .command = arg.command,
         .renderOutput = arg.renderOutput,
@@ -286,6 +288,6 @@ int main(int argc, char const *argv[]) {
         printf("NaN\n");
     }
     printf("SFTP TPS: %.2f\n", tps * arg.numSftpPerSsh);
-    
+
     return 0;
 }
