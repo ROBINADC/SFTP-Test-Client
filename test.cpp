@@ -208,7 +208,7 @@ void sigIntHandler(int sigNum) {
 }
 
 int main(int argc, char const *argv[]) {
-    TestArg arg = parseArg("config.yaml");
+    TestArg arg = parseArg("config.yml");
 
     printf("Test configuration\n");
     printf("Worker:\n");
